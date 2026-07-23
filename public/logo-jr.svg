@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 130" width="180" height="130">
+  <!-- JR monogram — Japan Railways style -->
+  <!-- Single unified path: J hooks left, R extends right, shared vertical spine -->
+
+  <!-- J: crossbar + stem + hook -->
+  <path fill="#1a1a1a" d="
+    M 14 10 L 80 10 L 80 26 L 60 26 L 60 10
+    L 14 10 Z
+  "/>
+  <!-- Shared vertical spine -->
+  <rect x="46" y="10" width="14" height="106" fill="#1a1a1a"/>
+
+  <!-- J hook curving left -->
+  <path fill="#1a1a1a" d="
+    M 46 82 L 46 116 L 34 116
+    Q 8 116 8 90 L 8 74 L 22 74 L 22 88
+    Q 22 100 34 100 L 46 100 L 46 82 Z
+  "/>
+
+  <!-- R bowl -->
+  <path fill="#1a1a1a" fill-rule="evenodd" d="
+    M 60 10 L 108 10
+    Q 138 10 138 38
+    Q 138 58 118 62
+    L 60 62 L 60 10 Z
+    M 74 24 L 74 48 L 106 48
+    Q 122 48 122 36
+    Q 122 24 106 24 Z
+  "/>
+
+  <!-- R vertical below bowl -->
+  <rect x="60" y="62" width="14" height="54" fill="#1a1a1a"/>
+
+  <!-- R diagonal leg -->
+  <polygon fill="#1a1a1a" points="100,62 136,116 154,116 116,58"/>
+</svg>
