@@ -153,9 +153,14 @@ const Dashboard = () => {
                                             <span className="font-bold text-sm dark:text-white text-center">{plan.destination}</span>
                                         </div>
                                     </div>
-                                    <div className="text-gray-600 dark:text-gray-300 text-sm text-center mb-3">
+                                    <div className="text-gray-600 dark:text-gray-300 text-sm text-center mb-1">
                                         {formatDate(plan.start_date)} - {formatDate(plan.end_date)}
                                     </div>
+                                    {plan.available_baggage_kg && (
+                                        <div className="text-gray-500 dark:text-gray-400 text-xs text-center mb-3">
+                                            🧳 {plan.available_baggage_kg} kg available
+                                        </div>
+                                    )}
                                     <div className="flex justify-end mt-auto">
                                         <button
                                             onClick={() => handleCancelPlan(plan.id)}
@@ -296,6 +301,9 @@ const ShipmentCard = ({ shipment, cityMap }) => {
                     <p className="text-gray-800 dark:text-gray-300 font-medium mb-1 max-w-xs">
                         {shipment.item_description || 'No description'}
                     </p>
+                    {shipment.weight && (
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">⚖️ {shipment.weight} kg</p>
+                    )}
                 </div>
                 <div className="flex-grow">
                     <div className="flex items-center justify-between mb-3">

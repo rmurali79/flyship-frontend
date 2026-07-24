@@ -13,7 +13,8 @@ const CreateTravelPlan = () => {
         origin: '',
         destination: '',
         start_date: '',
-        end_date: ''
+        end_date: '',
+        available_baggage_kg: ''
     });
 
     const navigate = useNavigate();
@@ -162,6 +163,11 @@ const CreateTravelPlan = () => {
                 <div>
                     <label className="block text-gray-700 dark:text-gray-300 mb-2 font-bold">Travel End Date (Arrival)</label>
                     <input type="date" name="end_date" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={formData.end_date} onChange={handleChange} required />
+                </div>
+                <div>
+                    <label className="block text-gray-700 dark:text-gray-300 mb-2 font-bold">Available Baggage (kg)</label>
+                    <input type="number" step="0.1" min="0" name="available_baggage_kg" placeholder="e.g. 5.0" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={formData.available_baggage_kg} onChange={handleChange} required />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Shipments heavier than this won't be shown to you as matches.</p>
                 </div>
                 <div className="flex justify-end space-x-4">
                     <button type="button" onClick={() => navigate('/dashboard')} className="px-6 py-3 border rounded text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</button>
