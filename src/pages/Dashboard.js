@@ -1,13 +1,63 @@
 import API_BASE from '../config/api';
 
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Plane, LayoutGrid, List } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from '../context/SnackbarContext';
 import { formatDate } from '../utils/date';
 import StatsWidget from '../components/StatsWidget';
 import ConfirmDialog from '../components/ConfirmDialog';
+
+// A little flight-route connector: two "airports" joined by a dashed path,
+// with an optional plane mid-flight, used anywhere an origin/destination
+// pair is shown.
+const FlightPath = ({ className = '', showPlane = true }) => (
+    <div className={`flex items-center flex-shrink-0 ${className}`}>
+        <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
+        <span className="flex-1 border-t-2 border-dashed border-gray-300 dark:border-gray-600" />
+        {showPlane && <Plane size={16} className="text-blue-500 dark:text-blue-400 flex-shrink-0 -rotate-45 mx-0.5" />}
+        <span className="flex-1 border-t-2 border-dashed border-gray-300 dark:border-gray-600" />
+        <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
+    </div>
+);
+
+// Resolves a city name to its photo via cityMap; falls back to a code tile
+// (e.g. "BER") when there's no photo on file, or if the photo fails to load.
+const CityThumb = ({ name, cityMap, size = 'default' }) => {
+    const [errored, setErrored] = useState(false);
+    if (!name) return null;
+
+    const lower = name.toLowerCase();
+    const key = cityMap[lower] ? lower : Object.keys(cityMap).find(k => lower.includes(k));
+    const entry = key ? cityMap[key] : null;
+    const rawUrl = entry?.imageUrl;
+    const resolvedUrl = rawUrl ? (rawUrl.startsWith('http') ? rawUrl : API_BASE + rawUrl) : null;
+    const code = entry?.code || name.slice(0, 3).toUpperCase();
+    const dims = size === 'small' ? 'w-14 h-10' : 'w-24 h-16';
+
+    if (resolvedUrl && !errored) {
+        return (
+            <img
+                src={resolvedUrl}
+                alt={name}
+                title={name}
+                className={`${dims} rounded-lg object-cover border border-gray-200 mb-2`}
+                onError={() => setErrored(true)}
+            />
+        );
+    }
+
+    return (
+        <div
+            title={name}
+            className={`${dims} rounded-lg border border-gray-200 mb-2 flex items-center justify-center bg-[#0B1B2E]`}
+        >
+            <span className={`${size === 'small' ? 'text-[10px]' : 'text-sm'} font-bold tracking-wide text-white`}>{code}</span>
+        </div>
+    );
+};
 
 const Dashboard = () => {
     const { user } = useAuth();
@@ -21,6 +71,15 @@ const Dashboard = () => {
     const [acceptedDeliveries, setAcceptedDeliveries] = useState([]);
     const [myListings, setMyListings] = useState([]);
 
+    const [cityFilter, setCityFilter] = useState('');
+    const [amountOp, setAmountOp] = useState('lt');
+    const [amountValue, setAmountValue] = useState('');
+    const [weightOp, setWeightOp] = useState('lt');
+    const [weightValue, setWeightValue] = useState('');
+    const [sortBy, setSortBy] = useState('none');
+    const [sortDir, setSortDir] = useState('asc');
+    const [listingLayout, setListingLayout] = useState('grid');
+
     const isShipper = user.role === 'shipper' || user.role === 'both';
     const isTraveler = user.role === 'traveler' || user.role === 'both';
 
@@ -32,9 +91,8 @@ const Dashboard = () => {
                 const res = await axios.get(API_BASE + '/api/cities');
                 const map = {};
                 res.data.forEach(c => {
-                    if (c.image_url) map[c.name.toLowerCase()] = c.image_url;
+                    map[c.name.toLowerCase()] = { imageUrl: c.image_url || null, code: c.code };
                 });
-                console.log('City Map Loaded:', map); // DEBUG
                 setCityMap(map);
             } catch (error) {
                 console.error('Failed to fetch cities', error);
@@ -56,20 +114,26 @@ const Dashboard = () => {
                     endpoint = '/api/shipments/my-shipments';
                 }
 
-                const resShipments = await axios.get(`${API_BASE}${endpoint}`, config);
-                setShipments(resShipments.data.filter(s => s.status !== 'deleted'));
-
+                const requests = [axios.get(`${API_BASE}${endpoint}`, config)];
                 if (isTraveler) {
-                    const resPlans = await axios.get(API_BASE + '/api/travel-plans/my-plans', config);
-                    setTravelPlans(resPlans.data);
-
-                    const resDeliveries = await axios.get(API_BASE + '/api/shipments/my-deliveries', config);
-                    setAcceptedDeliveries(resDeliveries.data);
+                    requests.push(axios.get(API_BASE + '/api/travel-plans/my-plans', config));
+                    requests.push(axios.get(API_BASE + '/api/shipments/my-deliveries', config));
+                }
+                if (user.role === 'both') {
+                    requests.push(axios.get(API_BASE + '/api/shipments/my-shipments', config));
                 }
 
+                const results = await Promise.all(requests);
+
+                setShipments(results[0].data.filter(s => s.status !== 'deleted'));
+
+                let nextIndex = 1;
+                if (isTraveler) {
+                    setTravelPlans(results[nextIndex++].data);
+                    setAcceptedDeliveries(results[nextIndex++].data);
+                }
                 if (user.role === 'both') {
-                    const resMy = await axios.get(API_BASE + '/api/shipments/my-shipments', config);
-                    setMyListings(resMy.data.filter(s => s.status !== 'deleted'));
+                    setMyListings(results[nextIndex++].data.filter(s => s.status !== 'deleted'));
                 }
 
             } catch (error) {
@@ -107,13 +171,61 @@ const Dashboard = () => {
 
     if (loading) return <div className="text-center mt-10">Loading...</div>;
 
-    const getCityImageLocal = (name) => {
-        if (!name || !cityMap) return null;
-        const lower = name.toLowerCase();
-        if (cityMap[lower]) return cityMap[lower];
-        const found = Object.keys(cityMap).find(k => lower.includes(k));
-        return found ? cityMap[found] : null;
+    const applyListingFilters = (list) => {
+        return list.filter(s => {
+            if (cityFilter.trim()) {
+                const needle = cityFilter.trim().toLowerCase();
+                const matchesCity = (s.origin && s.origin.toLowerCase().includes(needle)) ||
+                    (s.destination && s.destination.toLowerCase().includes(needle));
+                if (!matchesCity) return false;
+            }
+            if (amountValue !== '') {
+                const budget = parseFloat(s.max_budget);
+                if (isNaN(budget)) return false;
+                if (amountOp === 'lt' && !(budget < parseFloat(amountValue))) return false;
+                if (amountOp === 'gt' && !(budget > parseFloat(amountValue))) return false;
+            }
+            if (weightValue !== '') {
+                const weight = parseFloat(s.weight);
+                if (isNaN(weight)) return false;
+                if (weightOp === 'lt' && !(weight < parseFloat(weightValue))) return false;
+                if (weightOp === 'gt' && !(weight > parseFloat(weightValue))) return false;
+            }
+            return true;
+        });
     };
+
+    const clearListingFilters = () => {
+        setCityFilter('');
+        setAmountOp('lt');
+        setAmountValue('');
+        setWeightOp('lt');
+        setWeightValue('');
+    };
+
+    const applyListingSort = (list) => {
+        if (sortBy === 'none') return list;
+        const dir = sortDir === 'asc' ? 1 : -1;
+        return [...list].sort((a, b) => {
+            let valA, valB;
+            if (sortBy === 'city') {
+                valA = (a.origin || '').toLowerCase();
+                valB = (b.origin || '').toLowerCase();
+            } else if (sortBy === 'budget') {
+                valA = parseFloat(a.max_budget) || 0;
+                valB = parseFloat(b.max_budget) || 0;
+            } else if (sortBy === 'weight') {
+                valA = parseFloat(a.weight) || 0;
+                valB = parseFloat(b.weight) || 0;
+            }
+            if (valA < valB) return -1 * dir;
+            if (valA > valB) return 1 * dir;
+            return 0;
+        });
+    };
+
+    const visibleShipments = applyListingSort(applyListingFilters(shipments
+        .filter(s => user.role === 'shipper' ? s.status !== 'accepted' : true)));
 
     return (
         <div>
@@ -144,17 +256,16 @@ const Dashboard = () => {
                                 <div key={plan.id} className="bg-white dark:bg-gray-700 p-4 rounded shadow border dark:border-gray-600 flex flex-col">
                                     <div className="flex items-center justify-center gap-4 mb-3">
                                         <div className="flex flex-col items-center">
-                                            {getCityImageLocal(plan.origin) && <img src={getCityImageLocal(plan.origin)} className="w-24 h-16 rounded-lg object-cover border border-gray-200 mb-2" alt={plan.origin} />}
+                                            <CityThumb name={plan.origin} cityMap={cityMap} />
                                             <span className="font-bold text-sm dark:text-white text-center">{plan.origin}</span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">{formatDate(plan.start_date)}</span>
                                         </div>
-                                        <span className="font-bold text-gray-400 text-2xl">➝</span>
+                                        <FlightPath className="w-16" />
                                         <div className="flex flex-col items-center">
-                                            {getCityImageLocal(plan.destination) && <img src={getCityImageLocal(plan.destination)} className="w-24 h-16 rounded-lg object-cover border border-gray-200 mb-2" alt={plan.destination} />}
+                                            <CityThumb name={plan.destination} cityMap={cityMap} />
                                             <span className="font-bold text-sm dark:text-white text-center">{plan.destination}</span>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">{formatDate(plan.end_date)}</span>
                                         </div>
-                                    </div>
-                                    <div className="text-gray-600 dark:text-gray-300 text-sm text-center mb-1">
-                                        {formatDate(plan.start_date)} - {formatDate(plan.end_date)}
                                     </div>
                                     {plan.available_baggage_kg && (
                                         <div className="text-gray-500 dark:text-gray-400 text-xs text-center mb-3">
@@ -255,37 +366,205 @@ const Dashboard = () => {
                 )}
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {shipments
-                    .filter(s => user.role === 'shipper' ? s.status !== 'accepted' : true)
-                    .map(shipment => (
+            <div className="flex flex-wrap items-end gap-4 mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border dark:border-gray-700">
+                <div className="flex flex-col">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">City</label>
+                    <input
+                        type="text"
+                        aria-label="City filter"
+                        placeholder="Search origin or destination..."
+                        value={cityFilter}
+                        onChange={(e) => setCityFilter(e.target.value)}
+                        className="border dark:border-gray-600 rounded px-3 py-1.5 text-sm dark:bg-gray-700 dark:text-white w-56"
+                    />
+                </div>
+                <div className="flex flex-col">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Amount</label>
+                    <div className="flex gap-2">
+                        <select
+                            aria-label="Amount operator"
+                            value={amountOp}
+                            onChange={(e) => setAmountOp(e.target.value)}
+                            className="border dark:border-gray-600 rounded px-2 py-1.5 text-sm dark:bg-gray-700 dark:text-white"
+                        >
+                            <option value="lt">Less than</option>
+                            <option value="gt">Greater than</option>
+                        </select>
+                        <input
+                            type="number"
+                            aria-label="Amount value"
+                            placeholder="Amount"
+                            value={amountValue}
+                            onChange={(e) => setAmountValue(e.target.value)}
+                            className="border dark:border-gray-600 rounded px-3 py-1.5 text-sm dark:bg-gray-700 dark:text-white w-28"
+                        />
+                    </div>
+                </div>
+                <div className="flex flex-col">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Weight (kg)</label>
+                    <div className="flex gap-2">
+                        <select
+                            aria-label="Weight operator"
+                            value={weightOp}
+                            onChange={(e) => setWeightOp(e.target.value)}
+                            className="border dark:border-gray-600 rounded px-2 py-1.5 text-sm dark:bg-gray-700 dark:text-white"
+                        >
+                            <option value="lt">Less than</option>
+                            <option value="gt">Greater than</option>
+                        </select>
+                        <input
+                            type="number"
+                            aria-label="Weight value"
+                            placeholder="Weight"
+                            value={weightValue}
+                            onChange={(e) => setWeightValue(e.target.value)}
+                            className="border dark:border-gray-600 rounded px-3 py-1.5 text-sm dark:bg-gray-700 dark:text-white w-28"
+                        />
+                    </div>
+                </div>
+                <div className="flex flex-col">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Sort by</label>
+                    <div className="flex gap-2">
+                        <select
+                            aria-label="Sort by"
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="border dark:border-gray-600 rounded px-2 py-1.5 text-sm dark:bg-gray-700 dark:text-white"
+                        >
+                            <option value="none">None</option>
+                            <option value="city">City</option>
+                            <option value="budget">Budget</option>
+                            <option value="weight">Weight</option>
+                        </select>
+                        <select
+                            aria-label="Sort direction"
+                            value={sortDir}
+                            onChange={(e) => setSortDir(e.target.value)}
+                            disabled={sortBy === 'none'}
+                            className="border dark:border-gray-600 rounded px-2 py-1.5 text-sm dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                        >
+                            <option value="asc">Ascending</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </div>
+                </div>
+                <button
+                    onClick={clearListingFilters}
+                    className="text-sm text-blue-600 hover:text-blue-800 px-3 py-1.5"
+                >
+                    Clear filters
+                </button>
+
+                <div className="flex bg-gray-200 dark:bg-gray-700 rounded p-1 ml-auto">
+                    <button
+                        aria-label="Grid view"
+                        title="Grid view"
+                        onClick={() => setListingLayout('grid')}
+                        className={`p-2 rounded ${listingLayout === 'grid' ? 'bg-white dark:bg-gray-600 shadow' : 'text-gray-500 dark:text-gray-400'}`}
+                    >
+                        <LayoutGrid size={18} />
+                    </button>
+                    <button
+                        aria-label="List view"
+                        title="List view"
+                        onClick={() => setListingLayout('list')}
+                        className={`p-2 rounded ${listingLayout === 'list' ? 'bg-white dark:bg-gray-600 shadow' : 'text-gray-500 dark:text-gray-400'}`}
+                    >
+                        <List size={18} />
+                    </button>
+                </div>
+            </div>
+
+            {listingLayout === 'grid' ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {visibleShipments.map(shipment => (
                         <ShipmentCard key={shipment.id} shipment={shipment} cityMap={cityMap} />
                     ))}
-            </div>
+                </div>
+            ) : (
+                <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700">
+                    <table className="w-full text-sm border-collapse">
+                        <thead>
+                            <tr className="text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
+                                <th className="p-3">Origin</th>
+                                <th className="p-3 w-12"></th>
+                                <th className="p-3">Destination</th>
+                                <th className="p-3">Item</th>
+                                <th className="p-3">Weight</th>
+                                <th className="p-3">Budget</th>
+                                <th className="p-3">Reach By</th>
+                                <th className="p-3">Status</th>
+                                <th className="p-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {visibleShipments.map(shipment => (
+                                <ShipmentRow key={shipment.id} shipment={shipment} cityMap={cityMap} />
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
             {shipments.length === 0 && (
                 <p className="text-center text-gray-500 mt-10">No shipments found.</p>
+            )}
+            {shipments.length > 0 && visibleShipments.length === 0 && (
+                <p className="text-center text-gray-500 mt-10">No shipments match your filters.</p>
             )}
         </div>
     );
 };
 
+const statusBadgeClasses = (status) =>
+    `px-2 py-1 rounded text-xs font-semibold whitespace-nowrap ${status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+        status === 'accepted' ? 'bg-blue-100 text-blue-800' :
+            'bg-green-100 text-green-800'
+    }`;
+
+const ShipmentRow = ({ shipment, cityMap }) => {
+    const navigate = useNavigate();
+    return (
+        <tr
+            onClick={() => navigate(`/shipment/${shipment.id}`)}
+            className="border-b last:border-0 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
+        >
+            <td className="p-3">
+                <div className="flex items-center gap-2">
+                    <CityThumb name={shipment.origin} cityMap={cityMap} size="small" />
+                    <span className="font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">{shipment.origin}</span>
+                </div>
+            </td>
+            <td className="p-3">
+                <FlightPath className="w-10" showPlane={false} />
+            </td>
+            <td className="p-3">
+                <div className="flex items-center gap-2">
+                    <CityThumb name={shipment.destination} cityMap={cityMap} size="small" />
+                    <span className="font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">{shipment.destination}</span>
+                </div>
+            </td>
+            <td className="p-3 max-w-xs truncate text-gray-600 dark:text-gray-400">
+                {shipment.item_description || 'No description'}
+            </td>
+            <td className="p-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                {shipment.weight ? `${shipment.weight} kg` : '—'}
+            </td>
+            <td className="p-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                {shipment.max_budget ? `$${shipment.max_budget}` : '—'}
+            </td>
+            <td className="p-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                {shipment.reach_latest_by ? formatDate(shipment.reach_latest_by) : '—'}
+            </td>
+            <td className="p-3">
+                <span className={statusBadgeClasses(shipment.status)}>{shipment.status.toUpperCase()}</span>
+            </td>
+            <td className="p-3 text-blue-600 text-sm whitespace-nowrap">View →</td>
+        </tr>
+    );
+};
+
 const ShipmentCard = ({ shipment, cityMap }) => {
-    const getCityImage = (name) => {
-        if (!name || !cityMap) return null;
-        const lower = name.toLowerCase();
-
-        let url = null;
-        if (cityMap[lower]) url = cityMap[lower];
-        else {
-            const found = Object.keys(cityMap).find(k => lower.includes(k));
-            if (found) url = cityMap[found];
-        }
-
-        if (!url) console.warn(`Missing image for city: ${name}`);
-        return url;
-    };
-
     return (
         <Link to={`/shipment/${shipment.id}`} className="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border dark:border-gray-700 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-500 transition-all cursor-pointer">
             <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -304,20 +583,19 @@ const ShipmentCard = ({ shipment, cityMap }) => {
                     {shipment.weight && (
                         <p className="text-gray-500 dark:text-gray-400 text-xs">⚖️ {shipment.weight} kg</p>
                     )}
+                    {shipment.max_budget && (
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">💰 Budget: {shipment.max_budget}</p>
+                    )}
                 </div>
                 <div className="flex-grow">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex flex-col items-center">
-                            {getCityImage(shipment.origin) && (
-                                <img src={getCityImage(shipment.origin)} alt={shipment.origin} className="w-24 h-16 rounded-lg object-cover border border-gray-200 mb-2" title={shipment.origin} />
-                            )}
+                            <CityThumb name={shipment.origin} cityMap={cityMap} />
                             <span className="font-semibold text-xs text-gray-600 dark:text-gray-400 text-center">{shipment.origin}</span>
                         </div>
-                        <span className="font-bold text-gray-400 text-xl">→</span>
+                        <FlightPath className="flex-1 mx-2" />
                         <div className="flex flex-col items-center">
-                            {getCityImage(shipment.destination) && (
-                                <img src={getCityImage(shipment.destination)} alt={shipment.destination} className="w-24 h-16 rounded-lg object-cover border border-gray-200 mb-2" title={shipment.destination} />
-                            )}
+                            <CityThumb name={shipment.destination} cityMap={cityMap} />
                             <span className="font-semibold text-xs text-gray-600 dark:text-gray-400 text-center">{shipment.destination}</span>
                         </div>
                     </div>
@@ -333,12 +611,7 @@ const ShipmentCard = ({ shipment, cityMap }) => {
             </div>
 
             <div className="flex justify-between items-center border-t pt-4 dark:border-gray-700">
-                <span className={`px-2 py-1 rounded text-sm ${shipment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    shipment.status === 'accepted' ? 'bg-blue-100 text-blue-800' :
-                        'bg-green-100 text-green-800'
-                    }`}>
-                    {shipment.status.toUpperCase()}
-                </span>
+                <span className={statusBadgeClasses(shipment.status)}>{shipment.status.toUpperCase()}</span>
                 <span className="text-blue-600 text-sm">View Details →</span>
             </div>
         </Link>

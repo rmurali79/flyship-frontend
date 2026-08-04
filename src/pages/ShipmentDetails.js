@@ -4,6 +4,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from '../context/SnackbarContext';
+import { X, Star } from 'lucide-react';
 import Payment from '../components/Payment';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { formatDate } from '../utils/date';
@@ -15,7 +16,9 @@ const ShipmentDetails = () => {
     const snackbar = useSnackbar();
     const [shipment, setShipment] = useState(null);
     const [quotes, setQuotes] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [newQuote, setNewQuote] = useState({ amount: '', delivery_date: '', currency: 'USD', message: '' });
+    const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
     const [showPayment, setShowPayment] = useState(null);
     const [deleteReason, setDeleteReason] = useState('');
     const [showDeleteForm, setShowDeleteForm] = useState(false);
@@ -24,10 +27,14 @@ const ShipmentDetails = () => {
     const [confirmDialog, setConfirmDialog] = useState({ open: false });
 
     const refreshData = async () => {
-        const res = await axios.get(`${API_BASE}/api/shipments/${id}`);
+        const [res, quotesRes, reviewsRes] = await Promise.all([
+            axios.get(`${API_BASE}/api/shipments/${id}`),
+            axios.get(`${API_BASE}/api/quotes/shipment/${id}`),
+            axios.get(`${API_BASE}/api/reviews/shipment/${id}`),
+        ]);
         setShipment(res.data);
-        const quotesRes = await axios.get(`${API_BASE}/api/quotes/shipment/${id}`);
         setQuotes(quotesRes.data);
+        setReviews(reviewsRes.data);
     };
 
     useEffect(() => {
@@ -76,6 +83,32 @@ const ShipmentDetails = () => {
             snackbar.success('Quote accepted');
         } catch (error) {
             snackbar.error('Failed to accept quote: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleReviewSubmit = async () => {
+        if (!newReview.rating) { snackbar.warn('Please select a rating'); return; }
+        try {
+            await axios.post(`${API_BASE}/api/reviews`, {
+                shipment_id: id,
+                rating: newReview.rating,
+                comment: newReview.comment,
+            });
+            await refreshData();
+            setNewReview({ rating: 0, comment: '' });
+            snackbar.success('Review submitted');
+        } catch (error) {
+            snackbar.error('Failed to submit review: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleUpdateStatus = async (newStatus) => {
+        try {
+            await axios.post(`${API_BASE}/api/shipments/${id}/status`, { status: newStatus });
+            await refreshData();
+            snackbar.success(newStatus === 'in_transit' ? 'Marked as picked up' : 'Marked as delivered');
+        } catch (error) {
+            snackbar.error('Failed to update status: ' + (error.response?.data?.error || error.message));
         }
     };
 
@@ -128,6 +161,14 @@ const ShipmentDetails = () => {
     const isShipperOwner = user.role === 'shipper' && shipment.shipperId === user.id;
     const canDelete = isShipperOwner && shipment.status !== 'delivered' && shipment.status !== 'deleted';
 
+    const acceptedQuote = quotes.find(q => q.status === 'accepted');
+    const isAcceptedTraveler = user.id === acceptedQuote?.traveler_id;
+    const isReviewParticipant = shipment.status === 'delivered' && acceptedQuote &&
+        (user.id === shipment.shipperId || user.id === acceptedQuote.traveler_id);
+    const myReview = reviews.find(r => r.reviewer_id === user.id);
+    const otherReview = reviews.find(r => r.reviewer_id !== user.id);
+    const otherPartyLabel = user.id === shipment.shipperId ? 'the traveler' : 'the shipper';
+
     return (
         <div className="max-w-5xl mx-auto my-10 px-4">
             <ConfirmDialog
@@ -154,6 +195,22 @@ const ShipmentDetails = () => {
                         }`}>
                             {shipment.status.toUpperCase()}
                         </span>
+                        {isAcceptedTraveler && shipment.status === 'accepted' && (
+                            <button
+                                onClick={() => handleUpdateStatus('in_transit')}
+                                className="ml-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-bold"
+                            >
+                                Mark as Picked Up
+                            </button>
+                        )}
+                        {isAcceptedTraveler && shipment.status === 'in_transit' && (
+                            <button
+                                onClick={() => handleUpdateStatus('delivered')}
+                                className="ml-3 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-bold"
+                            >
+                                Mark as Delivered
+                            </button>
+                        )}
                     </div>
                     <div className="flex items-center gap-4 mt-4 md:mt-0">
                         <span className="text-gray-500 dark:text-gray-400">
@@ -167,6 +224,13 @@ const ShipmentDetails = () => {
                                 Delete Shipment
                             </button>
                         )}
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            aria-label="Close and return to listing"
+                            className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                        >
+                            <X size={24} />
+                        </button>
                     </div>
                 </div>
 
@@ -273,7 +337,15 @@ const ShipmentDetails = () => {
                                             <p className="text-sm text-gray-600 dark:text-gray-400">
                                                 Delivery by: {formatDate(quote.delivery_date)}
                                             </p>
-                                            <p className="text-sm text-gray-500">Traveler: {quote.Traveler?.name}</p>
+                                            <p className="text-sm text-gray-500 flex items-center gap-1.5">
+                                                Traveler: {quote.Traveler?.name}
+                                                {quote.Traveler?.review_count > 0 && (
+                                                    <span className="inline-flex items-center gap-0.5 text-yellow-600 dark:text-yellow-400 font-semibold">
+                                                        <Star size={13} fill="currentColor" />
+                                                        {quote.Traveler.average_rating.toFixed(1)} ({quote.Traveler.review_count})
+                                                    </span>
+                                                )}
+                                            </p>
                                             {quote.message && (
                                                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 italic">"{quote.message}"</p>
                                             )}
@@ -414,6 +486,73 @@ const ShipmentDetails = () => {
                     </div>
                 )}
             </div>
+
+            {isReviewParticipant && (
+                <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md mt-6">
+                    <h2 className="text-2xl font-bold mb-6 dark:text-white">Delivery Review</h2>
+
+                    {myReview ? (
+                        <div className="mb-6">
+                            <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Your review</p>
+                            <div className="flex items-center gap-1 mb-2">
+                                {[1, 2, 3, 4, 5].map(n => (
+                                    <Star
+                                        key={n}
+                                        size={20}
+                                        className={n <= myReview.rating ? 'text-yellow-500' : 'text-gray-300 dark:text-gray-600'}
+                                        fill={n <= myReview.rating ? 'currentColor' : 'none'}
+                                    />
+                                ))}
+                            </div>
+                            {myReview.comment && <p className="text-gray-700 dark:text-gray-300 italic">"{myReview.comment}"</p>}
+                        </div>
+                    ) : (
+                        <div className="mb-6 bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
+                            <h3 className="text-lg font-bold mb-4 dark:text-white">Rate {otherPartyLabel}</h3>
+                            <div className="flex items-center gap-1 mb-4">
+                                {[1, 2, 3, 4, 5].map(n => (
+                                    <button key={n} type="button" onClick={() => setNewReview({ ...newReview, rating: n })}>
+                                        <Star
+                                            size={28}
+                                            className={n <= newReview.rating ? 'text-yellow-500' : 'text-gray-300 dark:text-gray-500'}
+                                            fill={n <= newReview.rating ? 'currentColor' : 'none'}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                            <textarea
+                                className="w-full p-2 border rounded mb-4 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                                rows="3"
+                                placeholder="Leave a comment (optional)..."
+                                value={newReview.comment}
+                                onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                            />
+                            <button onClick={handleReviewSubmit} className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-bold">
+                                Submit Review
+                            </button>
+                        </div>
+                    )}
+
+                    {otherReview && (
+                        <div>
+                            <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                                {user.id === shipment.shipperId ? "Traveler's" : "Shipper's"} review of this delivery
+                            </p>
+                            <div className="flex items-center gap-1 mb-2">
+                                {[1, 2, 3, 4, 5].map(n => (
+                                    <Star
+                                        key={n}
+                                        size={18}
+                                        className={n <= otherReview.rating ? 'text-yellow-500' : 'text-gray-300 dark:text-gray-600'}
+                                        fill={n <= otherReview.rating ? 'currentColor' : 'none'}
+                                    />
+                                ))}
+                            </div>
+                            {otherReview.comment && <p className="text-gray-700 dark:text-gray-300 italic">"{otherReview.comment}"</p>}
+                        </div>
+                    )}
+                </div>
+            )}
 
             <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md mt-6">
                 <h2 className="text-2xl font-bold mb-6 dark:text-white">Tracking History</h2>

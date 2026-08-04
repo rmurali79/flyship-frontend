@@ -40,25 +40,25 @@ const StatsWidget = () => {
     const isTraveler = user.role === 'traveler' || user.role === 'both';
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
             {isShipper && (
                 <>
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-blue-500 flex items-center justify-between">
+                    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md border-l-4 border-blue-500 flex items-center justify-between">
                         <div>
-                            <div className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Total Spends</div>
-                            <div className="text-2xl font-bold dark:text-white mt-1">{formatCurrency(stats.totalSpends)}</div>
+                            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-semibold uppercase">Total Spends</div>
+                            <div className="text-lg sm:text-2xl font-bold dark:text-white mt-1">{formatCurrency(stats.totalSpends)}</div>
                         </div>
-                        <div className="p-3 bg-blue-100 rounded-full dark:bg-blue-900">
-                            <CreditCard className="w-8 h-8 text-blue-600 dark:text-blue-300" />
+                        <div className="p-2 sm:p-3 bg-blue-100 rounded-full dark:bg-blue-900">
+                            <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-300" />
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-green-500 flex items-center justify-between">
+                    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md border-l-4 border-green-500 flex items-center justify-between">
                         <div>
-                            <div className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Items Shipped</div>
-                            <div className="text-2xl font-bold dark:text-white mt-1">{stats.itemsShipped}</div>
+                            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-semibold uppercase">Items Shipped</div>
+                            <div className="text-lg sm:text-2xl font-bold dark:text-white mt-1">{stats.itemsShipped}</div>
                         </div>
-                        <div className="p-3 bg-green-100 rounded-full dark:bg-green-900">
-                            <Package className="w-8 h-8 text-green-600 dark:text-green-300" />
+                        <div className="p-2 sm:p-3 bg-green-100 rounded-full dark:bg-green-900">
+                            <Package className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 dark:text-green-300" />
                         </div>
                     </div>
                 </>
@@ -66,22 +66,22 @@ const StatsWidget = () => {
 
             {isTraveler && (
                 <>
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-green-500 flex items-center justify-between">
+                    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md border-l-4 border-green-500 flex items-center justify-between">
                         <div>
-                            <div className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Total Earnings</div>
-                            <div className="text-2xl font-bold dark:text-white mt-1">{formatCurrency(stats.totalEarnings)}</div>
+                            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-semibold uppercase">Total Earnings</div>
+                            <div className="text-lg sm:text-2xl font-bold dark:text-white mt-1">{formatCurrency(stats.totalEarnings)}</div>
                         </div>
-                        <div className="p-3 bg-green-100 rounded-full dark:bg-green-900">
-                            <DollarSign className="w-8 h-8 text-green-600 dark:text-green-300" />
+                        <div className="p-2 sm:p-3 bg-green-100 rounded-full dark:bg-green-900">
+                            <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 dark:text-green-300" />
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-blue-500 flex items-center justify-between">
+                    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md border-l-4 border-blue-500 flex items-center justify-between">
                         <div>
-                            <div className="text-gray-500 dark:text-gray-400 text-sm font-semibold uppercase">Trips Done</div>
-                            <div className="text-2xl font-bold dark:text-white mt-1">{stats.tripsDone}</div>
+                            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-semibold uppercase">Trips Done</div>
+                            <div className="text-lg sm:text-2xl font-bold dark:text-white mt-1">{stats.tripsDone}</div>
                         </div>
-                        <div className="p-3 bg-blue-100 rounded-full dark:bg-blue-900">
-                            <Briefcase className="w-8 h-8 text-blue-600 dark:text-blue-300" />
+                        <div className="p-2 sm:p-3 bg-blue-100 rounded-full dark:bg-blue-900">
+                            <Briefcase className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-300" />
                         </div>
                     </div>
                 </>
