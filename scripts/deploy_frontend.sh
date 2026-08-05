@@ -21,7 +21,8 @@ echo "--> Building Frontend Image..."
 gcloud builds submit \
   --config=cloudbuild.yaml \
   --substitutions="_REACT_APP_API_BASE=${BACKEND_URL},_IMAGE_TAG=${FRONTEND_IMG}" \
-  --project $PROJECT_ID
+  --project $PROJECT_ID \
+  --suppress-logs
 
 echo "--> Deploying Frontend to Cloud Run..."
 gcloud run deploy flyship-frontend \
