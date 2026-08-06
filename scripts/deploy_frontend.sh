@@ -18,11 +18,20 @@ echo " Backend URL: $BACKEND_URL"
 echo "======================================================"
 
 echo "--> Building Frontend Image..."
-gcloud builds submit \
+BUILD_ID=$(gcloud builds submit \
   --config=cloudbuild.yaml \
   --substitutions="_REACT_APP_API_BASE=${BACKEND_URL},_IMAGE_TAG=${FRONTEND_IMG}" \
   --project $PROJECT_ID \
-  --suppress-logs
+  --async --format="value(id)")
+echo "--> Build $BUILD_ID submitted, polling for completion..."
+while true; do
+    BUILD_STATUS=$(gcloud builds describe $BUILD_ID --project $PROJECT_ID --format="value(status)")
+    case "$BUILD_STATUS" in
+        SUCCESS) echo "--> Build succeeded."; break ;;
+        WORKING|QUEUED) sleep 10 ;;
+        *) echo "Build failed with status: $BUILD_STATUS"; exit 1 ;;
+    esac
+done
 
 echo "--> Deploying Frontend to Cloud Run..."
 gcloud run deploy flyship-frontend \
