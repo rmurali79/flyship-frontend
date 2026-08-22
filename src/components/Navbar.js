@@ -59,7 +59,7 @@ const Navbar = () => {
                 <div className="flex justify-between items-center h-16">
                     <Link to="/" className="flex items-center space-x-2 text-xl font-bold text-blue-600 dark:text-blue-400">
                         <FlyshipMark size={40} dark={darkMode} className="h-10 w-auto md:h-8" />
-                        <span className="hidden md:inline">FLYSHIP</span>
+                        <span className="hidden md:inline">JETRUNNER</span>
                     </Link>
 
                     <div className="flex items-center space-x-2 md:space-x-4">
