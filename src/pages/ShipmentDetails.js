@@ -1,6 +1,6 @@
 import API_BASE from '../config/api';
-import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from '../context/SnackbarContext';
@@ -26,7 +26,7 @@ const ShipmentDetails = () => {
     const [showWithdrawForm, setShowWithdrawForm] = useState(null);
     const [confirmDialog, setConfirmDialog] = useState({ open: false });
 
-    const refreshData = async () => {
+    const refreshData = useCallback(async () => {
         const [res, quotesRes, reviewsRes] = await Promise.all([
             axios.get(`${API_BASE}/api/shipments/${id}`),
             axios.get(`${API_BASE}/api/quotes/shipment/${id}`),
@@ -35,11 +35,11 @@ const ShipmentDetails = () => {
         setShipment(res.data);
         setQuotes(quotesRes.data);
         setReviews(reviewsRes.data);
-    };
+    }, [id]);
 
     useEffect(() => {
         refreshData().catch(err => console.error('Error fetching data:', err));
-    }, [id]);
+    }, [refreshData]);
 
     const handleQuoteSubmit = async (e) => {
         e.preventDefault();
