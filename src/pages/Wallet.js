@@ -1,11 +1,9 @@
 import API_BASE from '../config/api';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
 import { Wallet as WalletIcon, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 
 const Wallet = () => {
-    const { user } = useAuth();
     const [wallets, setWallets] = useState([]);
 
     const flagMapping = {

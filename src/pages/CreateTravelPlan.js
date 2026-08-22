@@ -2,11 +2,9 @@ import API_BASE from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from '../context/SnackbarContext';
 
 const CreateTravelPlan = () => {
-    const { user } = useAuth();
     const snackbar = useSnackbar();
     const [cities, setCities] = useState([]);
     const [formData, setFormData] = useState({
