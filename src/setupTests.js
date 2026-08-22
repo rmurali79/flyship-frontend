@@ -11,3 +11,21 @@ if (typeof globalThis.TextEncoder === 'undefined') {
   globalThis.TextEncoder = TextEncoder;
   globalThis.TextDecoder = TextDecoder;
 }
+
+// jsdom doesn't implement window.matchMedia. Navbar.js calls it on mount
+// for dark-mode detection, so any test rendering Navbar (directly or via
+// App) throws without this.
+if (typeof window.matchMedia === 'undefined') {
+  window.matchMedia = function (query) {
+    return {
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    };
+  };
+}
