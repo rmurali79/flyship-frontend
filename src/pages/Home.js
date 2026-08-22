@@ -57,7 +57,7 @@ const Home = () => {
             <div className="py-20 bg-gray-50 dark:bg-gray-900">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">Why Flyship?</h2>
+                        <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">Why FLYSHIP?</h2>
                         <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
                             The Future of Air Logistics
                         </p>
@@ -126,7 +126,7 @@ const Home = () => {
 
             {/* Footer */}
             <footer className="bg-gray-800 text-gray-400 py-8 text-center">
-                <p className="mb-2">&copy; {new Date().getFullYear()} Flyship. All rights reserved.</p>
+                <p className="mb-2">&copy; {new Date().getFullYear()} FLYSHIP. All rights reserved.</p>
                 <div className="space-x-4 flex justify-center flex-wrap gap-y-2">
                     <button onClick={() => openModal('Terms of Service', <Terms isModal />)} className="hover:text-white transition cursor-pointer bg-transparent border-0 underline text-gray-400">Terms of Service</button>
                     <span className="text-gray-600 hidden sm:inline">|</span>
