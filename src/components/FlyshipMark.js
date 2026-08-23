@@ -17,7 +17,7 @@ const FlyshipMark = ({ size = 32, dark = false, className = '' }) => {
             viewBox="0 0 156 130"
             className={className}
             role="img"
-            aria-label="JETRUNNER"
+            aria-label="FLYnSHIP"
         >
             <g transform="translate(-5,-39)">
                 <g fill="none" stroke={globe} strokeWidth="2.4">

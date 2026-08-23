@@ -12,11 +12,11 @@ beforeAll(() => {
     };
 });
 
-test('brand text in the nav reads JETRUNNER', () => {
+test('brand text in the nav reads FLYnSHIP', () => {
     render(
         <MemoryRouter>
             <Navbar />
         </MemoryRouter>
     );
-    expect(screen.getByText('JETRUNNER')).toBeInTheDocument();
+    expect(screen.getByText('FLYnSHIP')).toBeInTheDocument();
 });
