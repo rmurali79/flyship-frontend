@@ -4,6 +4,16 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from '../context/SnackbarContext';
 
+const ALLOWED_PICTURE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const MAX_PICTURE_SIZE_BYTES = 5 * 1024 * 1024;
+
+const getInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+};
+
 const Profile = () => {
     const { updateUser } = useAuth();
     const snackbar = useSnackbar();
@@ -12,10 +22,12 @@ const Profile = () => {
         country_code: '',
         mobile_number: '',
         role: 'shipper',
+        profile_picture: '',
     });
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -26,6 +38,7 @@ const Profile = () => {
                     country_code: res.data.country_code || '',
                     mobile_number: res.data.mobile_number || '',
                     role: res.data.role || 'shipper',
+                    profile_picture: res.data.profile_picture || '',
                 });
                 setEmail(res.data.email || '');
             })
@@ -35,6 +48,37 @@ const Profile = () => {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        e.target.value = '';
+        if (!file) return;
+
+        if (!ALLOWED_PICTURE_TYPES.includes(file.type)) {
+            setError('Profile picture must be a JPEG, PNG, GIF, or WEBP image');
+            return;
+        }
+        if (file.size > MAX_PICTURE_SIZE_BYTES) {
+            setError('Profile picture must be smaller than 5MB');
+            return;
+        }
+
+        setError('');
+        const uploadData = new FormData();
+        uploadData.append('profile_picture', file);
+
+        setUploading(true);
+        try {
+            const res = await axios.post(API_BASE + '/api/upload', uploadData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            setFormData((current) => ({ ...current, profile_picture: res.data.profile_url }));
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to upload profile picture');
+        } finally {
+            setUploading(false);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -69,6 +113,26 @@ const Profile = () => {
             <h2 className="text-2xl font-bold mb-6 text-center dark:text-white">Edit Profile</h2>
             {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
             <form onSubmit={handleSubmit}>
+                <div className="mb-6 flex flex-col items-center">
+                    <span className="w-20 h-20 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xl border-2 border-blue-700 overflow-hidden">
+                        {formData.profile_picture ? (
+                            <img src={formData.profile_picture} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                            getInitials(formData.name)
+                        )}
+                    </span>
+                    <label htmlFor="profile-picture-input" className="mt-3 text-sm text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">
+                        {uploading ? 'Uploading...' : 'Change photo'}
+                    </label>
+                    <input
+                        id="profile-picture-input"
+                        type="file"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        onChange={handleFileChange}
+                        disabled={uploading}
+                        className="hidden"
+                    />
+                </div>
                 <div className="mb-4">
                     <label htmlFor="profile-name" className="block text-gray-700 dark:text-gray-300 mb-2">Name</label>
                     <input

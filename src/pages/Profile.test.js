@@ -85,3 +85,45 @@ test('shows an error message when the update request fails', async () => {
     expect(await screen.findByText('Mobile number already in use')).toBeInTheDocument();
     expect(mockUpdateUser).not.toHaveBeenCalled();
 });
+
+test('shows initials when there is no profile picture', async () => {
+    await renderProfile();
+
+    expect(screen.getByText('JT')).toBeInTheDocument();
+});
+
+test('uploads a valid profile picture and previews it', async () => {
+    axios.post.mockResolvedValue({ data: { profile_url: 'https://cdn.example.com/profile/avatar.png' } });
+    await renderProfile();
+
+    const file = new File(['image-bytes'], 'avatar.png', { type: 'image/png' });
+    fireEvent.change(screen.getByLabelText('Change photo'), { target: { files: [file] } });
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalledWith(
+        expect.stringContaining('/api/upload'),
+        expect.any(FormData),
+        expect.objectContaining({ headers: { 'Content-Type': 'multipart/form-data' } })
+    ));
+    expect(await screen.findByAltText('Profile')).toHaveAttribute('src', 'https://cdn.example.com/profile/avatar.png');
+});
+
+test('rejects a profile picture with a disallowed file type', async () => {
+    await renderProfile();
+
+    const file = new File(['pdf-bytes'], 'resume.pdf', { type: 'application/pdf' });
+    fireEvent.change(screen.getByLabelText('Change photo'), { target: { files: [file] } });
+
+    expect(await screen.findByText(/must be a JPEG, PNG, GIF, or WEBP image/i)).toBeInTheDocument();
+    expect(axios.post).not.toHaveBeenCalled();
+});
+
+test('rejects a profile picture that is too large', async () => {
+    await renderProfile();
+
+    const file = new File(['image-bytes'], 'avatar.png', { type: 'image/png' });
+    Object.defineProperty(file, 'size', { value: 6 * 1024 * 1024 });
+    fireEvent.change(screen.getByLabelText('Change photo'), { target: { files: [file] } });
+
+    expect(await screen.findByText(/must be smaller than 5MB/i)).toBeInTheDocument();
+    expect(axios.post).not.toHaveBeenCalled();
+});
