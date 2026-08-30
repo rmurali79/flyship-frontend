@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from '../context/SnackbarContext';
 
 const Profile = () => {
-    const { user, updateUser } = useAuth();
+    const { updateUser } = useAuth();
     const snackbar = useSnackbar();
     const [formData, setFormData] = useState({
         name: '',
