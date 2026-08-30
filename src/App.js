@@ -19,6 +19,7 @@ import RefundPolicy from './pages/RefundPolicy';
 import PaymentTerms from './pages/PaymentTerms';
 import CookiePolicy from './pages/CookiePolicy';
 import Wallet from './pages/Wallet';
+import Profile from './pages/Profile';
 import OTPVerification from './pages/OTPVerification';
 
 const PrivateRoute = ({ children }) => {
@@ -70,6 +71,11 @@ function App() {
               <Route path="/wallet" element={
                 <PrivateRoute>
                   <Wallet />
+                </PrivateRoute>
+              } />
+              <Route path="/profile" element={
+                <PrivateRoute>
+                  <Profile />
                 </PrivateRoute>
               } />
             </Routes>
