@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import FlyshipMark from './FlyshipMark';
+import NotificationBell from './NotificationBell';
 
 const getInitials = (name) => {
     if (!name) return '?';
@@ -64,6 +65,8 @@ const Navbar = () => {
 
                     <div className="flex items-center space-x-2 md:space-x-4">
                         {user ? (
+                            <>
+                            <NotificationBell />
                             <div className="relative" ref={menuRef}>
                                 <button
                                     onClick={() => setMenuOpen(!menuOpen)}
@@ -134,6 +137,7 @@ const Navbar = () => {
                                     </div>
                                 )}
                             </div>
+                            </>
                         ) : (
                             <div className="space-x-2">
                                 <Link to="/login" className="px-4 py-2 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
