@@ -89,7 +89,10 @@ const NotificationBell = () => {
                 )}
             </button>
             {open && (
-                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-700 rounded-lg shadow-lg border dark:border-gray-600 py-1 z-50 max-h-96 overflow-y-auto">
+                <div
+                    data-testid="notification-panel"
+                    className="fixed inset-y-0 right-0 top-16 w-80 bg-white dark:bg-gray-700 shadow-lg border-l dark:border-gray-600 z-50 flex flex-col"
+                >
                     <div className="px-4 py-2 border-b dark:border-gray-600 flex items-center justify-between">
                         <p className="font-bold text-gray-900 dark:text-white text-sm">Notifications</p>
                         {hasUnread && (
@@ -98,26 +101,28 @@ const NotificationBell = () => {
                             </button>
                         )}
                     </div>
-                    {loading ? (
-                        <p className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Loading...</p>
-                    ) : notifications.length === 0 ? (
-                        <p className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No notifications yet</p>
-                    ) : (
-                        notifications.map((n) => (
-                            <button
-                                key={n.id}
-                                onClick={() => !n.read && markAsRead(n.id)}
-                                className={`w-full text-left px-4 py-2 text-sm border-b last:border-b-0 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 ${
-                                    n.read
-                                        ? 'text-gray-500 dark:text-gray-400'
-                                        : 'text-gray-900 dark:text-white font-medium bg-blue-50 dark:bg-gray-600/50'
-                                }`}
-                            >
-                                <p>{n.title}</p>
-                                <p className="text-xs font-normal text-gray-500 dark:text-gray-400 mt-0.5">{n.message}</p>
-                            </button>
-                        ))
-                    )}
+                    <div className="flex-1 overflow-y-auto">
+                        {loading ? (
+                            <p className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">Loading...</p>
+                        ) : notifications.length === 0 ? (
+                            <p className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No notifications yet</p>
+                        ) : (
+                            notifications.map((n) => (
+                                <button
+                                    key={n.id}
+                                    onClick={() => !n.read && markAsRead(n.id)}
+                                    className={`w-full text-left px-4 py-2 text-sm border-b last:border-b-0 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 ${
+                                        n.read
+                                            ? 'text-gray-500 dark:text-gray-400'
+                                            : 'text-gray-900 dark:text-white font-medium bg-blue-50 dark:bg-gray-600/50'
+                                    }`}
+                                >
+                                    <p>{n.title}</p>
+                                    <p className="text-xs font-normal text-gray-500 dark:text-gray-400 mt-0.5">{n.message}</p>
+                                </button>
+                            ))
+                        )}
+                    </div>
                 </div>
             )}
         </div>
