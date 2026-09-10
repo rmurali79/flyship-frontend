@@ -81,3 +81,23 @@ test('shows an empty state when there are no notifications', async () => {
 
     expect(await screen.findByText('No notifications yet')).toBeInTheDocument();
 });
+
+test('panel is fixed to the viewport edge and spans full height regardless of notification count', async () => {
+    axios.get.mockImplementation((url) => {
+        if (url.includes('/api/notifications/unread-count')) {
+            return Promise.resolve({ data: { unread_count: 0 } });
+        }
+        if (url.includes('/api/notifications')) {
+            return Promise.resolve({ data: [] });
+        }
+        return Promise.resolve({ data: [] });
+    });
+
+    render(<NotificationBell />);
+    fireEvent.click(screen.getByLabelText('Notifications'));
+    await screen.findByText('No notifications yet');
+
+    const panel = screen.getByTestId('notification-panel');
+    expect(panel).toHaveClass('fixed', 'inset-y-0', 'right-0');
+    expect(panel.className).not.toMatch(/max-h-/);
+});
