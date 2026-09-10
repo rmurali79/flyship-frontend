@@ -9,6 +9,21 @@ import Payment from '../components/Payment';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { formatDate } from '../utils/date';
 
+export const DISPUTE_REASONS = [
+    { value: 'item_damaged', label: 'Item damaged' },
+    { value: 'item_lost', label: 'Item lost' },
+    { value: 'item_not_as_described', label: 'Item not as described' },
+    { value: 'late_delivery', label: 'Late delivery' },
+    { value: 'no_show', label: 'No show' },
+    { value: 'communication_issue', label: 'Communication issue' },
+    { value: 'price_disagreement', label: 'Price disagreement' },
+    { value: 'schedule_change', label: 'Schedule change' },
+    { value: 'found_alternative', label: 'Found an alternative' },
+    { value: 'other', label: 'Other' },
+];
+
+const reasonLabel = (value) => DISPUTE_REASONS.find(r => r.value === value)?.label || value;
+
 const ShipmentDetails = () => {
     const { id } = useParams();
     const { user } = useAuth();
@@ -20,21 +35,29 @@ const ShipmentDetails = () => {
     const [newQuote, setNewQuote] = useState({ amount: '', delivery_date: '', currency: 'USD', message: '' });
     const [newReview, setNewReview] = useState({ rating: 0, comment: '' });
     const [showPayment, setShowPayment] = useState(null);
+    const [deleteReasonCategory, setDeleteReasonCategory] = useState('');
     const [deleteReason, setDeleteReason] = useState('');
     const [showDeleteForm, setShowDeleteForm] = useState(false);
+    const [withdrawReasonCategory, setWithdrawReasonCategory] = useState('');
     const [withdrawReason, setWithdrawReason] = useState('');
     const [showWithdrawForm, setShowWithdrawForm] = useState(null);
     const [confirmDialog, setConfirmDialog] = useState({ open: false });
+    const [disputes, setDisputes] = useState([]);
+    const [showDisputeForm, setShowDisputeForm] = useState(false);
+    const [newDispute, setNewDispute] = useState({ reason_category: '', description: '', evidence_photo_urls: [] });
+    const [resolutionNotesByDispute, setResolutionNotesByDispute] = useState({});
 
     const refreshData = useCallback(async () => {
-        const [res, quotesRes, reviewsRes] = await Promise.all([
+        const [res, quotesRes, reviewsRes, disputesRes] = await Promise.all([
             axios.get(`${API_BASE}/api/shipments/${id}`),
             axios.get(`${API_BASE}/api/quotes/shipment/${id}`),
             axios.get(`${API_BASE}/api/reviews/shipment/${id}`),
+            axios.get(`${API_BASE}/api/disputes`, { params: { subject_type: 'shipment', subject_id: id } }),
         ]);
         setShipment(res.data);
         setQuotes(quotesRes.data);
         setReviews(reviewsRes.data);
+        setDisputes(disputesRes.data);
     }, [id]);
 
     useEffect(() => {
@@ -113,7 +136,7 @@ const ShipmentDetails = () => {
     };
 
     const handleDeleteShipment = () => {
-        if (!deleteReason.trim()) { snackbar.warn('Please provide a reason'); return; }
+        if (!deleteReasonCategory) { snackbar.warn('Please select a reason'); return; }
         setConfirmDialog({
             open: true,
             title: 'Delete Shipment',
@@ -123,7 +146,10 @@ const ShipmentDetails = () => {
             onConfirm: async () => {
                 setConfirmDialog({ open: false });
                 try {
-                    await axios.post(`${API_BASE}/api/shipments/${id}/delete`, { reason: deleteReason });
+                    await axios.post(`${API_BASE}/api/shipments/${id}/delete`, {
+                        reason_category: deleteReasonCategory,
+                        reason: deleteReason,
+                    });
                     snackbar.success('Shipment deleted');
                     navigate('/dashboard');
                 } catch (error) {
@@ -134,7 +160,7 @@ const ShipmentDetails = () => {
     };
 
     const handleWithdrawQuote = (quoteId) => {
-        if (!withdrawReason.trim()) { snackbar.warn('Please provide a reason'); return; }
+        if (!withdrawReasonCategory) { snackbar.warn('Please select a reason'); return; }
         setConfirmDialog({
             open: true,
             title: 'Withdraw Quote',
@@ -144,8 +170,12 @@ const ShipmentDetails = () => {
             onConfirm: async () => {
                 setConfirmDialog({ open: false });
                 try {
-                    await axios.post(`${API_BASE}/api/quotes/${quoteId}/withdraw`, { reason: withdrawReason });
+                    await axios.post(`${API_BASE}/api/quotes/${quoteId}/withdraw`, {
+                        reason_category: withdrawReasonCategory,
+                        reason: withdrawReason,
+                    });
                     setShowWithdrawForm(null);
+                    setWithdrawReasonCategory('');
                     setWithdrawReason('');
                     await refreshData();
                     snackbar.success('Quote withdrawn');
@@ -154,6 +184,57 @@ const ShipmentDetails = () => {
                 }
             },
         });
+    };
+
+    const handleEvidenceUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const uploadData = new FormData();
+        uploadData.append('photo', file);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post(API_BASE + '/api/upload', uploadData, {
+                headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` }
+            });
+            const url = res.data.url.startsWith('http') ? res.data.url : API_BASE + res.data.url;
+            setNewDispute(d => ({ ...d, evidence_photo_urls: [...d.evidence_photo_urls, url] }));
+        } catch (error) {
+            snackbar.error('Evidence upload failed');
+        } finally {
+            e.target.value = '';
+        }
+    };
+
+    const handleFileDispute = async () => {
+        if (!newDispute.reason_category) { snackbar.warn('Please select a reason'); return; }
+        try {
+            await axios.post(`${API_BASE}/api/disputes`, {
+                subject_type: 'shipment',
+                subject_id: id,
+                reason_category: newDispute.reason_category,
+                description: newDispute.description,
+                evidence_photo_urls: newDispute.evidence_photo_urls,
+            });
+            setShowDisputeForm(false);
+            setNewDispute({ reason_category: '', description: '', evidence_photo_urls: [] });
+            await refreshData();
+            snackbar.success('Dispute filed');
+        } catch (error) {
+            snackbar.error('Failed to file dispute: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleDisputeAction = async (disputeId, action) => {
+        const notes = resolutionNotesByDispute[disputeId] || '';
+        if (action === 'reject' && !notes.trim()) { snackbar.warn('Please explain why you are rejecting this dispute'); return; }
+        try {
+            await axios.post(`${API_BASE}/api/disputes/${disputeId}/${action}`,
+                action === 'withdraw' || action === 'review' ? undefined : { resolution_notes: notes });
+            await refreshData();
+            snackbar.success('Dispute updated');
+        } catch (error) {
+            snackbar.error('Failed to update dispute: ' + (error.response?.data?.error || error.message));
+        }
     };
 
     if (!shipment) return <div className="text-center mt-10">Loading...</div>;
@@ -168,6 +249,7 @@ const ShipmentDetails = () => {
     const myReview = reviews.find(r => r.reviewer_id === user.id);
     const otherReview = reviews.find(r => r.reviewer_id !== user.id);
     const otherPartyLabel = user.id === shipment.shipperId ? 'the traveler' : 'the shipper';
+    const canFileDispute = !!acceptedQuote && (user.id === shipment.shipperId || isAcceptedTraveler);
 
     return (
         <div className="max-w-5xl mx-auto my-10 px-4">
@@ -240,10 +322,18 @@ const ShipmentDetails = () => {
                         <p className="text-sm text-red-600 dark:text-red-400 mb-3">
                             All pending quotes will be released. If a quote was accepted, cancellation penalties may apply.
                         </p>
+                        <select
+                            className="w-full p-2 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            value={deleteReasonCategory}
+                            onChange={(e) => setDeleteReasonCategory(e.target.value)}
+                        >
+                            <option value="">Select a reason...</option>
+                            {DISPUTE_REASONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                        </select>
                         <textarea
                             className="w-full p-2 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             rows="2"
-                            placeholder="Reason for deletion (required)..."
+                            placeholder="Additional details (optional)..."
                             value={deleteReason}
                             onChange={(e) => setDeleteReason(e.target.value)}
                         />
@@ -251,16 +341,21 @@ const ShipmentDetails = () => {
                             <button onClick={handleDeleteShipment} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-bold">
                                 Confirm Delete
                             </button>
-                            <button onClick={() => { setShowDeleteForm(false); setDeleteReason(''); }} className="px-4 py-2 border rounded text-sm dark:text-gray-300">
+                            <button onClick={() => { setShowDeleteForm(false); setDeleteReasonCategory(''); setDeleteReason(''); }} className="px-4 py-2 border rounded text-sm dark:text-gray-300">
                                 Cancel
                             </button>
                         </div>
                     </div>
                 )}
 
-                {shipment.cancellation_reason && (
+                {(shipment.cancellation_reason_category || shipment.cancellation_reason) && (
                     <div className="mb-6 p-3 bg-red-50 dark:bg-red-900/20 rounded border-l-4 border-red-500">
-                        <p className="text-sm text-red-700 dark:text-red-300"><span className="font-bold">Deletion reason:</span> {shipment.cancellation_reason}</p>
+                        <p className="text-sm text-red-700 dark:text-red-300">
+                            <span className="font-bold">Deletion reason:</span>{' '}
+                            {shipment.cancellation_reason_category ? reasonLabel(shipment.cancellation_reason_category) : null}
+                            {shipment.cancellation_reason_category && shipment.cancellation_reason && ' — '}
+                            {shipment.cancellation_reason}
+                        </p>
                     </div>
                 )}
 
@@ -349,8 +444,11 @@ const ShipmentDetails = () => {
                                             {quote.message && (
                                                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 italic">"{quote.message}"</p>
                                             )}
-                                            {quote.status === 'withdrawn' && quote.withdrawal_reason && (
-                                                <p className="text-sm text-orange-600 mt-1">Withdrawn: {quote.withdrawal_reason}</p>
+                                            {quote.status === 'withdrawn' && quote.withdrawal_reason_category && (
+                                                <p className="text-sm text-orange-600 mt-1">
+                                                    Withdrawn: {reasonLabel(quote.withdrawal_reason_category)}
+                                                    {quote.withdrawal_reason && ` — ${quote.withdrawal_reason}`}
+                                                </p>
                                             )}
                                         </div>
                                     </div>
@@ -437,8 +535,11 @@ const ShipmentDetails = () => {
                                             {quote.message && (
                                                 <p className="text-sm text-gray-500 font-normal mt-1">"{quote.message}"</p>
                                             )}
-                                            {quote.status === 'withdrawn' && quote.withdrawal_reason && (
-                                                <p className="text-sm text-orange-500 font-normal mt-1">Reason: {quote.withdrawal_reason}</p>
+                                            {quote.status === 'withdrawn' && quote.withdrawal_reason_category && (
+                                                <p className="text-sm text-orange-500 font-normal mt-1">
+                                                    Reason: {reasonLabel(quote.withdrawal_reason_category)}
+                                                    {quote.withdrawal_reason && ` — ${quote.withdrawal_reason}`}
+                                                </p>
                                             )}
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -452,7 +553,7 @@ const ShipmentDetails = () => {
                                             </span>
                                             {(quote.status === 'pending' || quote.status === 'accepted') && quote.traveler_id === user.id && (
                                                 <button
-                                                    onClick={() => { setShowWithdrawForm(showWithdrawForm === quote.id ? null : quote.id); setWithdrawReason(''); }}
+                                                    onClick={() => { setShowWithdrawForm(showWithdrawForm === quote.id ? null : quote.id); setWithdrawReasonCategory(''); setWithdrawReason(''); }}
                                                     className="text-sm text-orange-600 hover:text-orange-800 font-bold px-2 py-1 border border-orange-400 rounded"
                                                 >
                                                     Withdraw
@@ -462,10 +563,18 @@ const ShipmentDetails = () => {
                                     </div>
                                     {showWithdrawForm === quote.id && (
                                         <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-200 dark:border-orange-800">
+                                            <select
+                                                className="w-full p-2 border rounded mb-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                value={withdrawReasonCategory}
+                                                onChange={(e) => setWithdrawReasonCategory(e.target.value)}
+                                            >
+                                                <option value="">Select a reason...</option>
+                                                {DISPUTE_REASONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                                            </select>
                                             <textarea
                                                 className="w-full p-2 border rounded mb-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                                 rows="2"
-                                                placeholder="Reason for withdrawal (required)..."
+                                                placeholder="Additional details (optional)..."
                                                 value={withdrawReason}
                                                 onChange={(e) => setWithdrawReason(e.target.value)}
                                             />
@@ -473,7 +582,7 @@ const ShipmentDetails = () => {
                                                 <button onClick={() => handleWithdrawQuote(quote.id)} className="bg-orange-600 text-white px-3 py-1 rounded text-sm font-bold hover:bg-orange-700">
                                                     Confirm Withdraw
                                                 </button>
-                                                <button onClick={() => { setShowWithdrawForm(null); setWithdrawReason(''); }} className="px-3 py-1 border rounded text-sm dark:text-gray-300">
+                                                <button onClick={() => { setShowWithdrawForm(null); setWithdrawReasonCategory(''); setWithdrawReason(''); }} className="px-3 py-1 border rounded text-sm dark:text-gray-300">
                                                     Cancel
                                                 </button>
                                             </div>
@@ -486,6 +595,136 @@ const ShipmentDetails = () => {
                     </div>
                 )}
             </div>
+
+            {canFileDispute && (
+                <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md mt-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold dark:text-white">Disputes</h2>
+                        <button
+                            onClick={() => setShowDisputeForm(!showDisputeForm)}
+                            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-bold"
+                        >
+                            File a Dispute
+                        </button>
+                    </div>
+
+                    {showDisputeForm && (
+                        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border dark:border-gray-600">
+                            <select
+                                className="w-full p-2 border rounded mb-3 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                                value={newDispute.reason_category}
+                                onChange={(e) => setNewDispute({ ...newDispute, reason_category: e.target.value })}
+                            >
+                                <option value="">Select a reason...</option>
+                                {DISPUTE_REASONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+                            </select>
+                            <textarea
+                                className="w-full p-2 border rounded mb-3 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                                rows="3"
+                                placeholder="Describe what happened (optional)..."
+                                value={newDispute.description}
+                                onChange={(e) => setNewDispute({ ...newDispute, description: e.target.value })}
+                            />
+                            <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-semibold">Evidence photos</label>
+                            <input type="file" accept="image/*" className="mb-2 text-sm text-gray-500 dark:text-gray-300" onChange={handleEvidenceUpload} />
+                            {newDispute.evidence_photo_urls.length > 0 && (
+                                <div className="flex gap-2 flex-wrap mb-3">
+                                    {newDispute.evidence_photo_urls.map((url, i) => (
+                                        <img key={i} src={url} alt="Evidence" className="w-16 h-16 object-cover rounded border" />
+                                    ))}
+                                </div>
+                            )}
+                            <div className="flex gap-2">
+                                <button onClick={handleFileDispute} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-bold">
+                                    Submit Dispute
+                                </button>
+                                <button
+                                    onClick={() => { setShowDisputeForm(false); setNewDispute({ reason_category: '', description: '', evidence_photo_urls: [] }); }}
+                                    className="px-4 py-2 border rounded text-sm dark:text-gray-300"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {disputes.length === 0 ? (
+                        <p className="text-gray-500 italic">No disputes filed for this shipment.</p>
+                    ) : (
+                        <div className="space-y-4">
+                            {disputes.map(dispute => {
+                                const isRespondent = dispute.respondent_user_id === user.id;
+                                const isFiler = dispute.filed_by_user_id === user.id;
+                                const isActionable = dispute.status === 'open' || dispute.status === 'under_review';
+                                return (
+                                    <div key={dispute.id} className="border rounded-lg p-4 dark:border-gray-700">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <p className="font-bold dark:text-white">{reasonLabel(dispute.reason_category)}</p>
+                                                {dispute.description && <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{dispute.description}</p>}
+                                            </div>
+                                            <span className={`text-sm px-2 py-1 rounded font-bold ${
+                                                dispute.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                                                dispute.status === 'rejected' ? 'bg-gray-100 text-gray-800' :
+                                                dispute.status === 'withdrawn' ? 'bg-gray-100 text-gray-500' :
+                                                dispute.status === 'under_review' ? 'bg-blue-100 text-blue-800' :
+                                                'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                                {dispute.status.replace('_', ' ').toUpperCase()}
+                                            </span>
+                                        </div>
+                                        {dispute.evidence?.length > 0 && (
+                                            <div className="flex gap-2 flex-wrap mb-2">
+                                                {dispute.evidence.map(ev => (
+                                                    <a key={ev.id} href={ev.photo_url} target="_blank" rel="noopener noreferrer">
+                                                        <img src={ev.photo_url} alt="Evidence" className="w-16 h-16 object-cover rounded border" />
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {dispute.resolution_notes && (
+                                            <p className="text-sm text-gray-600 dark:text-gray-400 italic mb-2">Resolution: {dispute.resolution_notes}</p>
+                                        )}
+                                        {isActionable && (isFiler || isRespondent) && (
+                                            <div className="mt-2">
+                                                {isRespondent && (
+                                                    <>
+                                                        <textarea
+                                                            className="w-full p-2 border rounded mb-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                            rows="2"
+                                                            placeholder="Notes (required to reject, optional to accept)..."
+                                                            value={resolutionNotesByDispute[dispute.id] || ''}
+                                                            onChange={(e) => setResolutionNotesByDispute({ ...resolutionNotesByDispute, [dispute.id]: e.target.value })}
+                                                        />
+                                                        <div className="flex gap-2 flex-wrap">
+                                                            {dispute.status === 'open' && (
+                                                                <button onClick={() => handleDisputeAction(dispute.id, 'review')} className="px-3 py-1 border rounded text-sm dark:text-gray-300">
+                                                                    Mark Under Review
+                                                                </button>
+                                                            )}
+                                                            <button onClick={() => handleDisputeAction(dispute.id, 'accept')} className="bg-green-600 text-white px-3 py-1 rounded text-sm font-bold hover:bg-green-700">
+                                                                Accept
+                                                            </button>
+                                                            <button onClick={() => handleDisputeAction(dispute.id, 'reject')} className="bg-gray-600 text-white px-3 py-1 rounded text-sm font-bold hover:bg-gray-700">
+                                                                Reject
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                )}
+                                                {isFiler && (
+                                                    <button onClick={() => handleDisputeAction(dispute.id, 'withdraw')} className="mt-2 px-3 py-1 border rounded text-sm dark:text-gray-300">
+                                                        Withdraw Dispute
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
 
             {isReviewParticipant && (
                 <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md mt-6">
