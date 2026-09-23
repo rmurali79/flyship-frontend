@@ -12,11 +12,11 @@ beforeAll(() => {
     };
 });
 
-test('brand text in the nav reads Fly it Fast', () => {
+test('nav shows the PeerPost brand mark', () => {
     render(
         <MemoryRouter>
             <Navbar />
         </MemoryRouter>
     );
-    expect(screen.getByText('Fly it Fast')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'PeerPost' })).toBeInTheDocument();
 });

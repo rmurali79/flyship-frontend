@@ -18,6 +18,8 @@ const EyeOffIcon = () => (
     </svg>
 );
 
+const inputClass = "w-full h-11 rounded-[9px] border border-peerpost-borderStrong bg-peerpost-ink text-peerpost-heading placeholder-peerpost-faint px-3.5 text-[14.5px] font-body focus:outline-none focus:ring-2 focus:ring-peerpost-gold/60";
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -37,47 +39,63 @@ const Login = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-6 text-center dark:text-white">Login</h2>
-            {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
-            <form onSubmit={handleSubmit}>
-                <div className="mb-4">
-                    <label className="block text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                    <input
-                        type="email"
-                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
+        <div className="min-h-[calc(100vh-64px)] bg-peerpost-ink flex items-center justify-center px-4 py-12">
+            <div className="w-full max-w-[420px] bg-peerpost-surface border border-peerpost-border rounded-2xl p-10">
+                <div className="text-center mb-8">
+                    <h2 className="font-heading font-medium text-[27px] text-peerpost-heading mb-2">Welcome back</h2>
+                    <p className="font-body text-sm text-peerpost-muted">Log in to track shipments and manage your trips.</p>
                 </div>
-                <div className="mb-6">
-                    <label className="block text-gray-700 dark:text-gray-300 mb-2">Password</label>
-                    <div className="relative">
+
+                {error && (
+                    <div className="mb-5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm p-3 font-body">
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
+                    <div className="flex flex-col gap-[7px]">
+                        <label className="font-body text-[13px] font-semibold text-peerpost-body">Email address</label>
                         <input
-                            type={showPassword ? "text" : "password"}
-                            className="w-full p-2 pr-10 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            type="email"
+                            className={inputClass}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
-                        <button
-                            type="button"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                            onClick={() => setShowPassword(!showPassword)}
-                            tabIndex={-1}
-                        >
-                            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                        </button>
                     </div>
-                </div>
-                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
-                    Login
-                </button>
-            </form>
-            <p className="mt-4 text-center text-gray-600 dark:text-gray-400">
-                Don't have an account? <Link to="/register" className="text-blue-600 hover:underline">Register</Link>
-            </p>
+                    <div className="flex flex-col gap-[7px]">
+                        <label className="font-body text-[13px] font-semibold text-peerpost-body">Password</label>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                className={inputClass + " pr-10"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-peerpost-faint hover:text-peerpost-body"
+                                onClick={() => setShowPassword(!showPassword)}
+                                tabIndex={-1}
+                            >
+                                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                            </button>
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="mt-1.5 text-center font-body text-[15px] font-bold text-peerpost-goldInk bg-peerpost-gold hover:bg-peerpost-goldHover transition py-3.5 rounded-[9px]"
+                    >
+                        Log in
+                    </button>
+                </form>
+
+                <p className="mt-7 text-center font-body text-[13.5px] text-peerpost-muted">
+                    New to PeerPost? <Link to="/register" className="font-bold text-peerpost-gold hover:text-peerpost-goldHover">Create an account</Link>
+                </p>
+            </div>
         </div>
     );
 };
