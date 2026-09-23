@@ -1,0 +1,171 @@
+/* PeerPost landing page: animation + effects layer, ported from the
+   reference design (reference/Index-html/Motion.dc.html). Fixed to the
+   dark PeerPost palette (no light-mode variant). */
+
+:root {
+  --pp-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --pp-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+@keyframes pp-fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pp-fadeScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes pp-flapIn {
+  from { transform: rotateX(0deg); }
+  to   { transform: rotateX(180deg); }
+}
+
+.pp-flap-tile { position: relative; width: 9px; height: 14px; perspective: 160px; flex: none; }
+.pp-flap-tile.pp-flap-gap { margin-right: 5px; }
+.pp-flap-tile-inner {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  animation-name: pp-flapIn;
+  animation-duration: 260ms;
+  animation-timing-function: var(--pp-ease-in-out);
+  animation-fill-mode: both;
+}
+.pp-flap-tile-inner-dyn {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 550ms var(--pp-ease-in-out);
+}
+.pp-flap-face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 500; line-height: 1;
+  border-radius: 2px;
+  background: oklch(0.20 0.03 255);
+}
+.pp-flap-face::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px;
+  background: oklch(1 0 0 / 0.12);
+}
+.pp-flap-back { color: oklch(0.80 0.15 85); transform: rotateX(180deg); }
+
+.pp-bg-map-layer, .pp-bg-network-layer {
+  position: absolute;
+  inset: -30px;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 88% 78% at 50% 52%, black 10%, transparent 62%);
+  mask-image: radial-gradient(ellipse 88% 78% at 50% 52%, black 10%, transparent 62%);
+  will-change: transform;
+}
+.pp-bg-map-layer img, .pp-bg-network-layer svg { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); }
+
+@keyframes pp-hubPulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.7; }
+}
+.pp-network-hub { animation: pp-hubPulse 9s ease-in-out infinite; }
+.pp-network-hub:nth-of-type(2) { animation-delay: 1.05s; }
+.pp-network-hub:nth-of-type(3) { animation-delay: 2.1s; }
+.pp-network-hub:nth-of-type(4) { animation-delay: 3.15s; }
+.pp-network-hub:nth-of-type(5) { animation-delay: 4.2s; }
+.pp-network-hub:nth-of-type(6) { animation-delay: 5.25s; }
+
+@keyframes pp-hubGlowPulse {
+  0%, 100% { opacity: 0.28; transform: scale(0.94); }
+  50%      { opacity: 0.55; transform: scale(1.05); }
+}
+.pp-hub-glow {
+  filter: url(#pp-hubGlow);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pp-hubGlowPulse 12s ease-in-out infinite;
+}
+.pp-hub-glow:nth-of-type(2) { animation-delay: 1.35s; }
+.pp-hub-glow:nth-of-type(3) { animation-delay: 2.55s; }
+.pp-hub-glow:nth-of-type(4) { animation-delay: 3.9s; }
+.pp-hub-glow:nth-of-type(5) { animation-delay: 5.25s; }
+.pp-hub-glow:nth-of-type(6) { animation-delay: 6.45s; }
+
+@keyframes pp-flowDash {
+  0%   { stroke-dashoffset: 1; }
+  100% { stroke-dashoffset: -1; }
+}
+.pp-network-flow-path {
+  stroke-dasharray: 0.022 0.978;
+  filter: url(#pp-lineGlow);
+  animation: pp-flowDash 7.5s linear infinite;
+}
+.pp-network-flow-path:nth-of-type(2) { animation-delay: -1.2s; }
+.pp-network-flow-path:nth-of-type(3) { animation-delay: -2.4s; }
+.pp-network-flow-path:nth-of-type(4) { animation-delay: -3.6s; }
+.pp-network-flow-path:nth-of-type(5) { animation-delay: -4.8s; }
+.pp-network-flow-path:nth-of-type(6) { animation-delay: -6s; }
+.pp-network-flow-path:nth-of-type(7) { animation-delay: -7.2s; }
+.pp-network-flow-path:nth-of-type(8) { animation-delay: -0.6s; }
+.pp-network-flow-path:nth-of-type(9) { animation-delay: -3s; }
+.pp-network-flow-path:nth-of-type(10) { animation-delay: -5.4s; }
+
+.pp-entrance-1 { opacity: 0; animation: pp-fadeUp 550ms var(--pp-ease-out) 0ms forwards; }
+.pp-entrance-2 { opacity: 0; animation: pp-fadeUp 600ms var(--pp-ease-out) 90ms forwards; }
+.pp-entrance-3 { opacity: 0; animation: pp-fadeUp 600ms var(--pp-ease-out) 170ms forwards; }
+.pp-entrance-4 { opacity: 0; animation: pp-fadeUp 600ms var(--pp-ease-out) 250ms forwards; }
+.pp-entrance-sub { opacity: 0; animation: pp-fadeUp 550ms var(--pp-ease-out) 400ms forwards; }
+.pp-entrance-cta { opacity: 0; animation: pp-fadeScale 500ms var(--pp-ease-out) 520ms forwards; }
+.pp-entrance-chip-1 { opacity: 0; animation: pp-fadeUp 450ms var(--pp-ease-out) 640ms forwards; }
+.pp-entrance-chip-2 { opacity: 0; animation: pp-fadeUp 450ms var(--pp-ease-out) 700ms forwards; }
+.pp-entrance-chip-3 { opacity: 0; animation: pp-fadeUp 450ms var(--pp-ease-out) 760ms forwards; }
+
+.peerpost-btn { transition: transform 150ms var(--pp-ease-out); }
+.peerpost-btn:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  .peerpost-btn-primary:hover { filter: brightness(1.06); }
+  .peerpost-btn-ghost:hover { background: oklch(1 0 0 / 0.08); }
+}
+
+.pp-reveal-group { opacity: 0; transform: translateY(28px); transition: opacity 0.75s var(--pp-ease-out), transform 0.75s var(--pp-ease-out); }
+.pp-reveal-group.is-visible { opacity: 1; transform: translateY(0); }
+.pp-reveal-cards > * { opacity: 0; transform: translateY(24px); transition: opacity 0.65s var(--pp-ease-out), transform 0.65s var(--pp-ease-out); }
+.pp-reveal-cards.is-visible > * { opacity: 1; transform: translateY(0); }
+.pp-reveal-cards > *:nth-child(2) { transition-delay: 110ms; }
+.pp-reveal-cards > *:nth-child(3) { transition-delay: 220ms; }
+
+.pp-glass-card {
+  position: relative;
+  isolation: isolate;
+  transition: transform 320ms var(--pp-ease-out), box-shadow 320ms ease;
+}
+.pp-glass-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from 0deg, transparent 0deg, var(--pp-acc) 45deg, transparent 90deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .pp-glass-card:hover {
+    transform: translateY(-3px) scale(1.025);
+    box-shadow: 0 8px 32px oklch(0 0 0 / 0.35), 0 0 36px var(--pp-acc-glow);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-reveal-group, .pp-reveal-cards > * { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .pp-entrance-1, .pp-entrance-2, .pp-entrance-3, .pp-entrance-4, .pp-entrance-sub, .pp-entrance-cta,
+  .pp-entrance-chip-1, .pp-entrance-chip-2, .pp-entrance-chip-3 {
+    animation: none !important; opacity: 1 !important; transform: none !important;
+  }
+  .pp-network-hub { animation: none !important; opacity: 0.8 !important; }
+  .pp-hub-glow { animation: none !important; opacity: 0.55 !important; transform: none !important; }
+  .pp-network-flow-path { animation: none !important; opacity: 0 !important; }
+  .pp-flap-tile-inner { animation: none !important; transform: rotateX(180deg) !important; }
+  .pp-flap-tile-inner-dyn { transition: none !important; }
+  .pp-glass-card:hover { transform: none !important; }
+}

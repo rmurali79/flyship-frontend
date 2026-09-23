@@ -58,9 +58,8 @@ const Navbar = () => {
         <nav className="bg-white dark:bg-gray-800 shadow-md">
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-center h-16">
-                    <Link to="/" className="flex items-center space-x-2 text-xl font-bold text-blue-600 dark:text-blue-400">
-                        <FlyshipMark size={40} dark={darkMode} className="h-10 w-auto md:h-8" />
-                        <span className="hidden md:inline">Fly it Fast</span>
+                    <Link to="/" className="flex items-center text-gray-900 dark:text-white">
+                        <FlyshipMark size={40} className="h-10 w-auto" />
                     </Link>
 
                     <div className="flex items-center space-x-2 md:space-x-4">
@@ -143,7 +142,7 @@ const Navbar = () => {
                                 <Link to="/login" className="px-4 py-2 rounded text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     Login
                                 </Link>
-                                <Link to="/register" className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
+                                <Link to="/register" className="px-4 py-2 rounded bg-peerpost-gold text-peerpost-goldInk font-semibold hover:bg-peerpost-goldHover">
                                     Register
                                 </Link>
                             </div>

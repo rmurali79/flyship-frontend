@@ -1,37 +1,40 @@
 import React from 'react';
 
-// Globe + banking dart + speed trail. Coordinates are shared with the
-// mobile FlyshipMark (mobile/src/components/FlyshipMark.js) — keep both in
-// sync if the mark ever changes.
-const FlyshipMark = ({ size = 32, dark = false, className = '' }) => {
-    const ink = dark ? '#EEF2F6' : '#0B1B2E';
-    const globe = dark ? '#7D9AB6' : '#3E5B78';
-    const trail = dark
-        ? ['#FF7A33', '#C26232', '#794630']
-        : ['#D85A1C', '#E28355', '#EDB599'];
+// PeerPost wordmark. viewBox is 411.01 x 104.82 (~3.92:1); `size` sets the
+// rendered height and width is derived to preserve that aspect ratio.
+const FlyshipMark = ({ size = 33, className = '' }) => {
+    const height = size;
+    const width = size * (411.01 / 104.82);
 
     return (
         <svg
-            width={size}
-            height={size * (130 / 156)}
-            viewBox="0 0 156 130"
+            width={width}
+            height={height}
+            viewBox="0 0 411.01 104.82"
+            fill="none"
             className={className}
             role="img"
-            aria-label="Fly it Fast"
+            aria-label="PeerPost"
         >
-            <g transform="translate(-5,-39)">
-                <g fill="none" stroke={globe} strokeWidth="2.4">
-                    <circle cx="44" cy="78" r="30" />
-                    <ellipse cx="44" cy="78" rx="30" ry="9" />
-                    <ellipse cx="44" cy="78" rx="11" ry="30" />
-                </g>
-                <g transform="translate(114,78) rotate(-38)">
-                    <line x1="-34" y1="10" x2="-74" y2="-4" stroke={trail[0]} strokeWidth="5" strokeLinecap="round" />
-                    <line x1="-37" y1="20" x2="-84" y2="15" stroke={trail[1]} strokeWidth="3.5" strokeLinecap="round" />
-                    <line x1="-35" y1="29" x2="-92" y2="32" stroke={trail[2]} strokeWidth="2" strokeLinecap="round" />
-                    <polygon points="48,0 -24,-20 -6,-3 -6,6 -34,16" fill={ink} />
-                    <line x1="26" y1="-3" x2="-22" y2="8" stroke={trail[0]} strokeWidth="2" strokeLinecap="round" />
-                </g>
+            <defs>
+                <linearGradient id="peerpost-logo-grad" x1="42.33" y1="58.38" x2="4.78" y2="15.47" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="#e82921" />
+                    <stop offset="1" stopColor="#ee8118" />
+                </linearGradient>
+            </defs>
+            <g fill="currentColor">
+                <path d="M62.41,14.8h19.19c11.73,0,21.18,4.25,21.18,17.4s-9.71,18.34-21.18,18.34h-6.95v18.34h-12.24V14.8ZM80.89,40.82c6.71,0,9.89-3.01,9.89-8.63s-3.45-7.68-9.89-7.68h-6.24v16.31h6.24Z" />
+                <path d="M107.46,14.8h35.85v10.26h-23.61v10.85h20.06v10.26h-20.06v12.45h24.44v10.26h-36.68V14.8Z" />
+                <path d="M151.03,14.8h35.85v10.26h-23.61v10.85h20.06v10.26h-20.06v12.45h24.44v10.26h-36.68V14.8Z" />
+                <path d="M192.69,14.8h19.23c11.46,0,20.88,3.98,20.88,16.85s-9.43,17.78-20.88,17.78h-6.96v19.46h-12.26V14.8ZM210.93,39.71c6.43,0,9.88-2.77,9.88-8.06s-3.45-7.14-9.88-7.14h-5.97v15.2h5.97ZM218.15,38.36l17.26,30.53h-13.69l-12.04-22.68,8.47-7.84Z" />
+                <path d="M277.22,41.59c0-18.07,8.87-27.79,21.75-27.79s21.75,9.72,21.75,27.79-8.87,28.29-21.75,28.29-21.75-9.79-21.75-28.29ZM308.17,41.59c0-11.24-3.56-17.22-9.2-17.22s-9.2,5.98-9.2,17.22,3.56,17.71,9.2,17.71,9.2-6.05,9.2-17.71Z" />
+                <path d="M321.83,62.07l7.02-8.41c4.09,3.35,9.13,5.65,14.38,5.65s7.59-2.01,7.59-4.66c0-3.89-3.21-4.83-8.33-6.98l-7.05-3.01c-5.99-2.28-11.46-6.87-11.46-14.74,0-8.96,8.07-16.12,19.82-16.12,6.51,0,13.08,2.44,17.96,7.08l-6.17,7.72c-3.81-2.73-7.18-4.22-12.46-4.22-4.03,0-6.77,1.67-6.77,4.83s3.62,4.44,8.81,6.39l6.62,2.8c7.08,2.66,11.56,7.07,11.56,14.7,0,8.99-7.54,16.78-20.93,16.78-7.31,0-14.86-2.67-20.59-7.81Z" />
+                <path d="M379.99,25.06h-16.21v-10.26h44.67v10.26h-16.21v43.82h-12.24V25.06Z" />
+            </g>
+            <path d="M236.69,14.8h19.19c11.73,0,21.18,4.25,21.18,17.4s-9.71,18.34-21.18,18.34h-6.95v18.34h-12.24V14.8ZM255.17,40.82c6.71,0,9.89-3.01,9.89-8.63s-3.45-7.68-9.89-7.68h-6.24v16.31h6.24Z" fill="#f2572b" />
+            <g>
+                <path d="M35.61,13.8H13.77c-.24,0-.47,0-.71.02-.22-.01-.44-.02-.66-.02H1c-.55,0-1,.45-1,1v12.77s0,0,0,0v22.71c0,10.27,8.33,18.6,18.6,18.6h6.2s0-21.34,0-21.34c0-3.42,2.78-6.2,6.2-6.2h24.59v-7.57c0-11.03-8.94-19.97-19.97-19.97Z" fill="url(#peerpost-logo-grad)" />
+                <path d="M49.72,33.6c0-8.11-6.58-14.69-14.69-14.69H5.7l17.48,17.48h26.54v-2.79Z" fill="currentColor" />
             </g>
         </svg>
     );

@@ -1,6 +1,6 @@
 {
-  "short_name": "Fly it Fast",
-  "name": "Fly it Fast",
+  "short_name": "PeerPost",
+  "name": "PeerPost",
   "icons": [
     {
       "src": "favicon.ico",
@@ -21,5 +21,5 @@
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#0b1b2e",
-  "background_color": "#eef2f6"
+  "background_color": "#0b1b2e"
 }

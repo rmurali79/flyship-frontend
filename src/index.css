@@ -5,3 +5,15 @@
 body {
   @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200;
 }
+
+/* Browsers (Chrome/Safari) force a yellow/white autofill background on
+   inputs the browser has saved a value for -- most commonly email and
+   password fields -- overriding our own background-color. Neutralize it
+   with the box-shadow inset trick so autofilled fields still match the
+   rest of the form. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: inherit;
+  transition: background-color 9999s ease-in-out 0s;
+}
