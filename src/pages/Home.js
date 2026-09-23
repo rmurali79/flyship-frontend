@@ -90,6 +90,10 @@ const Home = () => {
         <div className="flex flex-col min-h-screen bg-peerpost-ink font-body">
             {/* Hero */}
             <div style={{ position: 'relative', overflow: 'hidden' }} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
+                <div className="absolute inset-0">
+                    <img src="/hero_world_travel.png" alt="" className="w-full h-full object-cover opacity-[0.14]" />
+                    <div className="absolute inset-0 bg-peerpost-ink/80" />
+                </div>
                 <div ref={mapRef} className="pp-bg-map-layer">
                     <img src={worldMapDots} alt="" />
                 </div>
