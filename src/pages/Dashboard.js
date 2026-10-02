@@ -1,7 +1,7 @@
 import API_BASE from '../config/api';
 
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Plane, LayoutGrid, List } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +9,8 @@ import { useSnackbar } from '../context/SnackbarContext';
 import { formatDate } from '../utils/date';
 import StatsWidget from '../components/StatsWidget';
 import ConfirmDialog from '../components/ConfirmDialog';
+import ItemImage from '../components/ItemImage';
+import ShipmentDrawer from '../components/ShipmentDrawer';
 
 // A little flight-route connector: two "airports" joined by a dashed path,
 // with an optional plane mid-flight, used anywhere an origin/destination
@@ -101,49 +103,64 @@ const Dashboard = () => {
         fetchCities();
     }, []);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const config = { headers: { Authorization: `Bearer ${token}` } };
+    const loadData = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const config = { headers: { Authorization: `Bearer ${token}` } };
 
-                let endpoint = '/api/shipments';
-                if (isTraveler && viewMode === 'matched') {
-                    endpoint = '/api/shipments?matched=true';
-                } else if (user.role === 'shipper') {
-                    endpoint = '/api/shipments/my-shipments';
-                }
-
-                const requests = [axios.get(`${API_BASE}${endpoint}`, config)];
-                if (isTraveler) {
-                    requests.push(axios.get(API_BASE + '/api/travel-plans/my-plans', config));
-                    requests.push(axios.get(API_BASE + '/api/shipments/my-deliveries', config));
-                }
-                if (user.role === 'both') {
-                    requests.push(axios.get(API_BASE + '/api/shipments/my-shipments', config));
-                }
-
-                const results = await Promise.all(requests);
-
-                setShipments(results[0].data.filter(s => s.status !== 'deleted'));
-
-                let nextIndex = 1;
-                if (isTraveler) {
-                    setTravelPlans(results[nextIndex++].data);
-                    setAcceptedDeliveries(results[nextIndex++].data);
-                }
-                if (user.role === 'both') {
-                    setMyListings(results[nextIndex++].data.filter(s => s.status !== 'deleted'));
-                }
-
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                setLoading(false);
+            let endpoint = '/api/shipments';
+            if (isTraveler && viewMode === 'matched') {
+                endpoint = '/api/shipments?matched=true';
+            } else if (user.role === 'shipper') {
+                endpoint = '/api/shipments/my-shipments';
             }
-        };
-        fetchData();
-    }, [user.role, viewMode, isShipper, isTraveler]);
+
+            const requests = [axios.get(`${API_BASE}${endpoint}`, config)];
+            if (isTraveler) {
+                requests.push(axios.get(API_BASE + '/api/travel-plans/my-plans', config));
+                requests.push(axios.get(API_BASE + '/api/shipments/my-deliveries', config));
+            }
+            if (user.role === 'both') {
+                requests.push(axios.get(API_BASE + '/api/shipments/my-shipments', config));
+            }
+
+            const results = await Promise.all(requests);
+
+            setShipments(results[0].data.filter(s => s.status !== 'deleted'));
+
+            let nextIndex = 1;
+            if (isTraveler) {
+                setTravelPlans(results[nextIndex++].data);
+                setAcceptedDeliveries(results[nextIndex++].data);
+            }
+            if (user.role === 'both') {
+                setMyListings(results[nextIndex++].data.filter(s => s.status !== 'deleted'));
+            }
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [user.role, viewMode, isTraveler]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
+
+    // The shipment open in the side panel lives in the URL (?shipment=<id>), so the back button
+    // closes it and the link can be shared.
+    const [searchParams, setSearchParams] = useSearchParams();
+    const location = useLocation();
+    const navigate = useNavigate();
+    const openShipmentId = searchParams.get('shipment');
+    const closeShipment = useCallback(() => {
+        if (location.state?.fromListing) {
+            navigate(-1);
+        } else {
+            setSearchParams(prev => { prev.delete('shipment'); return prev; }, { replace: true });
+        }
+    }, [location.state, navigate, setSearchParams]);
 
     const handleCancelPlan = (planId) => {
         setConfirmDialog({
@@ -239,6 +256,9 @@ const Dashboard = () => {
                 onCancel={() => setConfirmDialog({ open: false })}
             />
             <StatsWidget />
+            {openShipmentId && (
+                <ShipmentDrawer shipmentId={openShipmentId} onClose={closeShipment} onChanged={loadData} />
+            )}
 
             {isTraveler && (
                 <div className="mb-8 p-6 bg-blue-50 dark:bg-gray-800 rounded-lg shadow">
@@ -487,7 +507,6 @@ const Dashboard = () => {
                         <thead>
                             <tr className="text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
                                 <th className="p-3">Origin</th>
-                                <th className="p-3 w-12"></th>
                                 <th className="p-3">Destination</th>
                                 <th className="p-3">Item</th>
                                 <th className="p-3">Weight</th>
@@ -522,11 +541,13 @@ const statusBadgeClasses = (status) =>
             'bg-green-100 text-green-800'
     }`;
 
+const shipmentLink = (shipment) => ({ search: `?shipment=${shipment.id}` });
+
 const ShipmentRow = ({ shipment, cityMap }) => {
     const navigate = useNavigate();
     return (
         <tr
-            onClick={() => navigate(`/shipment/${shipment.id}`)}
+            onClick={() => navigate(shipmentLink(shipment), { state: { fromListing: true } })}
             className="border-b last:border-0 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
         >
             <td className="p-3">
@@ -534,9 +555,6 @@ const ShipmentRow = ({ shipment, cityMap }) => {
                     <CityThumb name={shipment.origin} cityMap={cityMap} size="small" />
                     <span className="font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">{shipment.origin}</span>
                 </div>
-            </td>
-            <td className="p-3">
-                <FlightPath className="w-10" showPlane={false} />
             </td>
             <td className="p-3">
                 <div className="flex items-center gap-2">
@@ -566,17 +584,10 @@ const ShipmentRow = ({ shipment, cityMap }) => {
 
 const ShipmentCard = ({ shipment, cityMap }) => {
     return (
-        <Link to={`/shipment/${shipment.id}`} className="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border dark:border-gray-700 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-500 transition-all cursor-pointer">
+        <Link to={shipmentLink(shipment)} state={{ fromListing: true }} className="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border dark:border-gray-700 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-500 transition-all cursor-pointer">
             <div className="flex flex-col md:flex-row gap-4 mb-4">
                 <div className="flex flex-col">
-                    {shipment.photo_url && (
-                        <img
-                            src={shipment.photo_url}
-                            alt="Item"
-                            className="w-full md:w-32 h-32 object-cover rounded-md flex-shrink-0 bg-gray-100 mb-2"
-                            onError={(e) => { e.target.style.display = 'none' }}
-                        />
-                    )}
+                    <ItemImage shipment={shipment} className="w-full md:w-32 h-32 rounded-md flex-shrink-0 mb-2" />
                     <p className="text-gray-800 dark:text-gray-300 font-medium mb-1 max-w-xs">
                         {shipment.item_description || 'No description'}
                     </p>

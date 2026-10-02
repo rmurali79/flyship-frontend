@@ -30,11 +30,18 @@ module.exports = {
       },
       animation: {
         'slide-up': 'slideUp 0.3s ease-out',
+        // No fill-mode: the panel ends with no transform, so fixed-position dialogs inside it
+        // still position against the viewport.
+        'drawer-in': 'drawerIn 0.2s ease-out',
       },
       keyframes: {
         slideUp: {
           '0%': { opacity: '0', transform: 'translate(-50%, 20px)' },
           '100%': { opacity: '1', transform: 'translate(-50%, 0)' },
+        },
+        drawerIn: {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(0)' },
         },
       },
     },
