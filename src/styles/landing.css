@@ -1,6 +1,6 @@
 /* PeerPost landing page: animation + effects layer, ported from the
-   reference design (reference/Index-html/Motion.dc.html). Fixed to the
-   dark PeerPost palette (no light-mode variant). */
+   reference design (reference/Index-html/Motion.dc.html). Colors come from
+   the light/dark theme variables in src/index.css. */
 
 :root {
   --pp-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -41,13 +41,13 @@
   display: flex; align-items: center; justify-content: center;
   font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 500; line-height: 1;
   border-radius: 2px;
-  background: oklch(0.20 0.03 255);
+  background: var(--pp-surface);
 }
 .pp-flap-face::after {
   content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px;
-  background: oklch(1 0 0 / 0.12);
+  background: var(--pp-border-strong);
 }
-.pp-flap-back { color: oklch(0.80 0.15 85); transform: rotateX(180deg); }
+.pp-flap-back { color: oklch(var(--pp-gold)); transform: rotateX(180deg); }
 
 .pp-bg-map-layer, .pp-bg-network-layer {
   position: absolute;
@@ -57,7 +57,15 @@
   mask-image: radial-gradient(ellipse 88% 78% at 50% 52%, black 10%, transparent 62%);
   will-change: transform;
 }
-.pp-bg-map-layer img, .pp-bg-network-layer svg { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); }
+.pp-bg-map-dots, .pp-bg-network-layer svg { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); }
+/* The dot map is an image, which CSS variables can't recolor, so it's used as a mask over a
+   theme-colored layer. Its own 16% dot opacity carries through. */
+.pp-bg-map-dots {
+  width: 1440px; height: 640px;
+  background: var(--pp-map-dot);
+  -webkit-mask: var(--pp-map-src) no-repeat center / contain;
+  mask: var(--pp-map-src) no-repeat center / contain;
+}
 
 @keyframes pp-hubPulse {
   0%, 100% { opacity: 0.35; }
@@ -119,7 +127,7 @@
 .peerpost-btn:active { transform: scale(0.97); }
 @media (hover: hover) and (pointer: fine) {
   .peerpost-btn-primary:hover { filter: brightness(1.06); }
-  .peerpost-btn-ghost:hover { background: oklch(1 0 0 / 0.08); }
+  .peerpost-btn-ghost:hover { background: var(--pp-hover); }
 }
 
 .pp-reveal-group { opacity: 0; transform: translateY(28px); transition: opacity 0.75s var(--pp-ease-out), transform 0.75s var(--pp-ease-out); }
@@ -152,7 +160,7 @@
 @media (hover: hover) and (pointer: fine) {
   .pp-glass-card:hover {
     transform: translateY(-3px) scale(1.025);
-    box-shadow: 0 8px 32px oklch(0 0 0 / 0.35), 0 0 36px var(--pp-acc-glow);
+    box-shadow: var(--pp-glass-hover-shadow), 0 0 36px var(--pp-acc-glow);
   }
 }
 

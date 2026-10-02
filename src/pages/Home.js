@@ -20,31 +20,31 @@ import useReveal from '../components/landing/useReveal';
 import useParallax from '../components/landing/useParallax';
 
 const IconArrow = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="oklch(0.80 0.15 85)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 3 3 10.5l7.5 3L13.5 21 21 3Z" /><path d="M10.5 13.5 21 3" /></svg>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ stroke: 'oklch(var(--pp-gold))' }} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 3 3 10.5l7.5 3L13.5 21 21 3Z" /><path d="M10.5 13.5 21 3" /></svg>
 );
 const IconReceipt = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="oklch(0.78 0.16 145)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18" /><circle cx="16" cy="14" r="1.1" fill="oklch(0.78 0.16 145)" stroke="none" /></svg>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ stroke: 'oklch(var(--pp-green))' }} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18" /><circle cx="16" cy="14" r="1.1" style={{ fill: 'oklch(var(--pp-green))' }} stroke="none" /></svg>
 );
 const IconShieldCheck = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="oklch(0.75 0.14 250)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" /><path d="M9 12l2 2 4-4" /></svg>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ stroke: 'oklch(var(--pp-blue))' }} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" /><path d="M9 12l2 2 4-4" /></svg>
 );
 const IconId = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="oklch(0.75 0.14 250)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3.5 20c0-3.6 2.9-6 5.5-6s5.5 2.4 5.5 6" /><path d="M16 12l2 2 3.5-3.5" /></svg>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ stroke: 'oklch(var(--pp-blue))' }} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M3.5 20c0-3.6 2.9-6 5.5-6s5.5 2.4 5.5 6" /><path d="M16 12l2 2 3.5-3.5" /></svg>
 );
 const IconEscrow = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="oklch(0.78 0.16 145)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7.5a4 4 0 0 1 8 0V11" /></svg>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ stroke: 'oklch(var(--pp-green))' }} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7.5a4 4 0 0 1 8 0V11" /></svg>
 );
 const IconStar = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="oklch(0.80 0.15 85)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.8 6.8 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5Z" /></svg>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ stroke: 'oklch(var(--pp-gold))' }} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.8 6.8 19.6l1-5.8L3.5 9.7l5.9-.9L12 3.5Z" /></svg>
 );
 const IconVerified = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="oklch(0.80 0.15 170)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4" /><circle cx="12" cy="12" r="9" /></svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ stroke: 'oklch(var(--pp-teal))' }} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4" /><circle cx="12" cy="12" r="9" /></svg>
 );
 const IconLock = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="oklch(0.80 0.15 170)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="10" width="16" height="9" rx="2" /><path d="M7.5 10V7a4.5 4.5 0 0 1 9 0v3" /></svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ stroke: 'oklch(var(--pp-teal))' }} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="10" width="16" height="9" rx="2" /><path d="M7.5 10V7a4.5 4.5 0 0 1 9 0v3" /></svg>
 );
 const IconClock = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="oklch(0.80 0.15 170)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ stroke: 'oklch(var(--pp-teal))' }} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" /></svg>
 );
 
 const SectionEyebrow = ({ color, children }) => (
@@ -53,10 +53,10 @@ const SectionEyebrow = ({ color, children }) => (
 
 const StepRow = ({ n, accent, title, children }) => (
     <div style={{ display: 'flex', gap: '16px' }}>
-        <div style={{ flex: 'none', width: '30px', height: '30px', borderRadius: '7px', background: 'oklch(0.17 0.03 255)', border: '1px solid oklch(1 0 0 / 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: accent }}>{n}</div>
+        <div style={{ flex: 'none', width: '30px', height: '30px', borderRadius: '7px', background: 'oklch(var(--pp-ink))', border: '1px solid var(--pp-border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: accent }}>{n}</div>
         <div>
-            <div style={{ fontSize: '14.5px', fontWeight: 700, color: 'oklch(0.97 0.01 95)', marginBottom: '3px' }}>{title}</div>
-            <div style={{ fontSize: '13px', lineHeight: 1.55, color: 'oklch(0.58 0.02 255)' }}>{children}</div>
+            <div style={{ fontSize: '14.5px', fontWeight: 700, color: 'oklch(var(--pp-heading))', marginBottom: '3px' }}>{title}</div>
+            <div style={{ fontSize: '13px', lineHeight: 1.55, color: 'oklch(var(--pp-faint))' }}>{children}</div>
         </div>
     </div>
 );
@@ -95,7 +95,7 @@ const Home = () => {
                     <div className="absolute inset-0 bg-peerpost-ink/80" />
                 </div>
                 <div ref={mapRef} className="pp-bg-map-layer">
-                    <img src={worldMapDots} alt="" />
+                    <div className="pp-bg-map-dots" style={{ '--pp-map-src': `url(${worldMapDots})` }} />
                 </div>
                 <div ref={networkRef} className="pp-bg-network-layer">
                     <NetworkBackground />
@@ -130,17 +130,17 @@ const Home = () => {
             {/* Why PeerPost */}
             <div className="relative overflow-hidden px-8 py-24 max-w-6xl mx-auto w-full">
                 <div ref={whyRef} className="pp-reveal-group relative z-10 text-center max-w-xl mx-auto mb-12">
-                    <SectionEyebrow color="oklch(0.80 0.15 85)">WHY PEERPOST</SectionEyebrow>
+                    <SectionEyebrow color="oklch(var(--pp-gold))">WHY PEERPOST</SectionEyebrow>
                     <h2 className="font-display font-semibold text-3xl text-peerpost-heading m-0 leading-snug">The future of air logistics is already flying</h2>
                 </div>
                 <div ref={whyCardsRef} className="pp-reveal-cards relative z-10 grid md:grid-cols-3 gap-6">
-                    <GlassCard icon={<IconArrow />} badge="FAST" badgeColor="oklch(0.80 0.15 85)" badgeBg="oklch(0.80 0.15 85 / 0.16)" title="Faster than freight">
+                    <GlassCard icon={<IconArrow />} badge="FAST" badgeColor="oklch(var(--pp-gold))" badgeBg="oklch(var(--pp-gold) / 0.16)" title="Faster than freight">
                         Your package moves at the speed of a traveler's flight, not a cargo hold's schedule. It arrives the day they land.
                     </GlassCard>
-                    <GlassCard icon={<IconReceipt />} badge="SAVE" badgeColor="oklch(0.78 0.16 145)" badgeBg="oklch(0.78 0.16 145 / 0.16)" title="Priced for real people">
+                    <GlassCard icon={<IconReceipt />} badge="SAVE" badgeColor="oklch(var(--pp-green))" badgeBg="oklch(var(--pp-green) / 0.16)" title="Priced for real people">
                         Shippers pay less than traditional couriers. Travelers offset the cost of a trip they were already taking.
                     </GlassCard>
-                    <GlassCard icon={<IconShieldCheck />} badge="SECURE" badgeColor="oklch(0.75 0.14 250)" badgeBg="oklch(0.75 0.14 250 / 0.18)" title="Built on verification">
+                    <GlassCard icon={<IconShieldCheck />} badge="SECURE" badgeColor="oklch(var(--pp-blue))" badgeBg="oklch(var(--pp-blue) / 0.18)" title="Built on verification">
                         Every traveler is identity-verified and rated. Every shipment is tracked door to door.
                     </GlassCard>
                 </div>
@@ -149,24 +149,24 @@ const Home = () => {
             {/* How it works */}
             <div className="bg-peerpost-surface px-8 py-24">
                 <div ref={howRef} className="pp-reveal-group text-center max-w-xl mx-auto mb-14">
-                    <SectionEyebrow color="oklch(0.80 0.15 85)">HOW IT WORKS</SectionEyebrow>
+                    <SectionEyebrow color="oklch(var(--pp-gold))">HOW IT WORKS</SectionEyebrow>
                     <h2 className="font-display font-semibold text-3xl text-peerpost-heading m-0 leading-snug">One network, two ways to win</h2>
                 </div>
                 <div ref={howCardsRef} className="pp-reveal-cards grid md:grid-cols-2 gap-16 max-w-6xl mx-auto">
                     <div>
                         <div className="font-mono text-[11.5px] font-semibold tracking-wide text-peerpost-muted mb-[22px]">FOR SHIPPERS</div>
                         <div className="flex flex-col gap-[22px]">
-                            <StepRow n={1} accent="oklch(0.80 0.15 85)" title="Post your package">Tell us what you're sending and where it needs to go.</StepRow>
-                            <StepRow n={2} accent="oklch(0.80 0.15 85)" title="Match with a traveler">Browse verified travelers already flying your route.</StepRow>
-                            <StepRow n={3} accent="oklch(0.80 0.15 85)" title="Track to delivery">Follow your package in real time until it's handed over.</StepRow>
+                            <StepRow n={1} accent="oklch(var(--pp-gold))" title="Post your package">Tell us what you're sending and where it needs to go.</StepRow>
+                            <StepRow n={2} accent="oklch(var(--pp-gold))" title="Match with a traveler">Browse verified travelers already flying your route.</StepRow>
+                            <StepRow n={3} accent="oklch(var(--pp-gold))" title="Track to delivery">Follow your package in real time until it's handed over.</StepRow>
                         </div>
                     </div>
                     <div>
                         <div className="font-mono text-[11.5px] font-semibold tracking-wide text-peerpost-muted mb-[22px]">FOR TRAVELERS</div>
                         <div className="flex flex-col gap-[22px]">
-                            <StepRow n={1} accent="oklch(0.80 0.15 170)" title="Share your itinerary">Add your upcoming flights and available space.</StepRow>
-                            <StepRow n={2} accent="oklch(0.80 0.15 170)" title="Accept a shipment">Choose packages that fit your route and schedule.</StepRow>
-                            <StepRow n={3} accent="oklch(0.80 0.15 170)" title="Get paid">Funds are released the moment delivery is confirmed.</StepRow>
+                            <StepRow n={1} accent="oklch(var(--pp-teal))" title="Share your itinerary">Add your upcoming flights and available space.</StepRow>
+                            <StepRow n={2} accent="oklch(var(--pp-teal))" title="Accept a shipment">Choose packages that fit your route and schedule.</StepRow>
+                            <StepRow n={3} accent="oklch(var(--pp-teal))" title="Get paid">Funds are released the moment delivery is confirmed.</StepRow>
                         </div>
                     </div>
                 </div>
@@ -175,18 +175,18 @@ const Home = () => {
             {/* Trust & Safety */}
             <div className="relative overflow-hidden px-8 py-24 max-w-6xl mx-auto w-full">
                 <div ref={trustRef} className="pp-reveal-group relative z-10 text-center max-w-xl mx-auto mb-12">
-                    <SectionEyebrow color="oklch(0.80 0.15 170)">TRUST &amp; SAFETY</SectionEyebrow>
+                    <SectionEyebrow color="oklch(var(--pp-teal))">TRUST &amp; SAFETY</SectionEyebrow>
                     <h2 className="font-display font-semibold text-3xl text-peerpost-heading m-0 mb-3 leading-snug">Trust, built into every handoff</h2>
                     <p className="text-[13.5px] leading-relaxed text-peerpost-muted m-0">Handing a package to a stranger only works when the platform has done the hard part first.</p>
                 </div>
                 <div ref={trustCardsRef} className="pp-reveal-cards relative z-10 grid md:grid-cols-3 gap-6">
-                    <GlassCard icon={<IconId />} badge="ID" badgeColor="oklch(0.75 0.14 250)" badgeBg="oklch(0.75 0.14 250 / 0.18)" title="Identity verification">
+                    <GlassCard icon={<IconId />} badge="ID" badgeColor="oklch(var(--pp-blue))" badgeBg="oklch(var(--pp-blue) / 0.18)" title="Identity verification">
                         Government ID and a selfie check are required before any traveler can accept a shipment.
                     </GlassCard>
-                    <GlassCard icon={<IconEscrow />} badge="ESCROW" badgeColor="oklch(0.78 0.16 145)" badgeBg="oklch(0.78 0.16 145 / 0.16)" title="Escrow-style payments">
+                    <GlassCard icon={<IconEscrow />} badge="ESCROW" badgeColor="oklch(var(--pp-green))" badgeBg="oklch(var(--pp-green) / 0.16)" title="Escrow-style payments">
                         Funds are held securely and only released to the traveler once delivery is confirmed.
                     </GlassCard>
-                    <GlassCard icon={<IconStar />} badge="RATED" badgeColor="oklch(0.80 0.15 85)" badgeBg="oklch(0.80 0.15 85 / 0.16)" title="Ratings on both sides">
+                    <GlassCard icon={<IconStar />} badge="RATED" badgeColor="oklch(var(--pp-gold))" badgeBg="oklch(var(--pp-gold) / 0.16)" title="Ratings on both sides">
                         Shippers and travelers rate each other after every delivery, building a track record you can trust.
                     </GlassCard>
                 </div>
