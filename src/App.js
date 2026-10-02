@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SnackbarProvider } from './context/SnackbarContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -29,6 +30,7 @@ const PrivateRoute = ({ children }) => {
 
 function App() {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <SnackbarProvider>
       <Router>
@@ -84,6 +86,7 @@ function App() {
       </Router>
       </SnackbarProvider>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

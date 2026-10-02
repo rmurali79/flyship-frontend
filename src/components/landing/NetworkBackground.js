@@ -1,7 +1,7 @@
 import React from 'react';
 
 // Route-network overlay: pulsing hub cities connected by glowing flow lines.
-// Colors fixed to the dark PeerPost palette (no light-mode variant).
+// Colors come from the theme variables in src/index.css.
 const HUBS = [
     { cx: 215, cy: 195 }, { cx: 665, cy: 140 }, { cx: 760, cy: 260 },
     { cx: 960, cy: 320 }, { cx: 1090, cy: 195 }, { cx: 1195, cy: 440 },
@@ -34,16 +34,16 @@ const NetworkBackground = () => (
                 <feGaussianBlur in="SourceGraphic" stdDeviation="9" />
             </filter>
         </defs>
-        <g fill="none" stroke="oklch(0.80 0.16 65 / 0.18)" strokeWidth="1.1" strokeLinecap="round">
+        <g fill="none" style={{ stroke: 'var(--pp-network-line)' }} strokeWidth="1.1" strokeLinecap="round">
             {LINES.map((d, i) => <path key={i} d={d} />)}
         </g>
-        <g fill="none" stroke="oklch(0.85 0.18 62 / 0.65)" strokeWidth="2" strokeLinecap="round">
+        <g fill="none" style={{ stroke: 'var(--pp-network-flow)' }} strokeWidth="2" strokeLinecap="round">
             {LINES.map((d, i) => <path key={i} pathLength="1" className="pp-network-flow-path" d={d} />)}
         </g>
-        <g fill="oklch(0.78 0.19 55 / 0.25)">
+        <g style={{ fill: 'var(--pp-network-glow)' }}>
             {HUBS.map((h, i) => <circle key={i} className="pp-hub-glow" cx={h.cx} cy={h.cy} r="16" />)}
         </g>
-        <g fill="oklch(0.80 0.16 65 / 0.45)">
+        <g style={{ fill: 'var(--pp-network-hub)' }}>
             {HUBS.map((h, i) => <circle key={i} className="pp-network-hub" cx={h.cx} cy={h.cy} r="3.2" />)}
         </g>
     </svg>

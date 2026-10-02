@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useSnackbar } from '../context/SnackbarContext';
 
-const inputClass = "w-full h-11 rounded-[9px] border border-peerpost-borderStrong bg-peerpost-ink text-peerpost-heading placeholder-peerpost-faint px-3.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-peerpost-gold/60";
+const inputClass = "pp-field w-full h-11 rounded-[9px] border border-peerpost-borderStrong bg-peerpost-ink text-peerpost-heading placeholder-peerpost-faint px-3.5 text-sm font-body focus:outline-none focus:ring-2 focus:ring-peerpost-gold/60";
 const labelClass = "font-body text-[13px] font-semibold text-peerpost-body";
 
 const ROLE_OPTIONS = [
@@ -82,7 +82,7 @@ const Register = () => {
                 </div>
 
                 {error && (
-                    <div className="mb-5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm p-3 font-body">
+                    <div className="mb-5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-300 text-sm p-3 font-body">
                         {error}
                     </div>
                 )}
@@ -176,7 +176,7 @@ const Register = () => {
                         {uploading && <p className="text-sm text-peerpost-gold mt-1 font-body">Uploading...</p>}
                         {formData.profile_picture && (
                             <div className="mt-1 flex items-center gap-2">
-                                <span className="text-emerald-400 text-sm font-body">✓ Uploaded</span>
+                                <span className="text-emerald-700 dark:text-emerald-400 text-sm font-body">✓ Uploaded</span>
                                 <img src={formData.profile_picture} alt="Preview" className="w-10 h-10 rounded-full object-cover border border-peerpost-borderStrong" />
                             </div>
                         )}

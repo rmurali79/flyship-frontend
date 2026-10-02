@@ -61,7 +61,7 @@ const FlapTicker = () => {
     const group1 = buildGroup(flipN, 1);
 
     return (
-        <div className="pp-entrance-1" style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 13px', border: '1px solid oklch(1 0 0 / 0.12)', borderRadius: '100px' }}>
+        <div className="pp-entrance-1" style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 13px', border: '1px solid var(--pp-border-strong)', borderRadius: '100px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
                 {group0.map((item, i) => (
                     <div key={`g0-${i}`} className={"pp-flap-tile" + (item.isGap ? " pp-flap-gap" : "")}>
