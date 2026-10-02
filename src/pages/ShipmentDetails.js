@@ -8,6 +8,7 @@ import { X, Star } from 'lucide-react';
 import Payment from '../components/Payment';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { formatDate } from '../utils/date';
+import ItemImage from '../components/ItemImage';
 
 export const DISPUTE_REASONS = [
     { value: 'item_damaged', label: 'Item damaged' },
@@ -24,8 +25,12 @@ export const DISPUTE_REASONS = [
 
 const reasonLabel = (value) => DISPUTE_REASONS.find(r => r.value === value)?.label || value;
 
-const ShipmentDetails = () => {
-    const { id } = useParams();
+// Rendered as its own page (/shipment/:id) or, given shipmentId and onClose, inside the
+// dashboard's side panel. onChanged tells the host that the shipment was modified.
+const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
+    const params = useParams();
+    const id = shipmentId ?? params.id;
+    const inPanel = !!onClose;
     const { user } = useAuth();
     const navigate = useNavigate();
     const snackbar = useSnackbar();
@@ -64,6 +69,13 @@ const ShipmentDetails = () => {
         refreshData().catch(err => console.error('Error fetching data:', err));
     }, [refreshData]);
 
+    const reload = async () => {
+        await refreshData();
+        onChanged?.();
+    };
+
+    const close = onClose || (() => navigate('/dashboard'));
+
     const handleQuoteSubmit = async (e) => {
         e.preventDefault();
 
@@ -90,7 +102,7 @@ const ShipmentDetails = () => {
                 currency: newQuote.currency || 'USD',
                 message: newQuote.message
             });
-            await refreshData();
+            await reload();
             setNewQuote({ amount: '', delivery_date: '', currency: 'USD', message: '' });
             snackbar.success('Quote submitted successfully');
         } catch (error) {
@@ -101,7 +113,7 @@ const ShipmentDetails = () => {
     const handleAcceptQuote = async (quoteId) => {
         try {
             await axios.post(`${API_BASE}/api/quotes/${quoteId}/accept`);
-            await refreshData();
+            await reload();
             setShowPayment(quoteId);
             snackbar.success('Quote accepted');
         } catch (error) {
@@ -117,7 +129,7 @@ const ShipmentDetails = () => {
                 rating: newReview.rating,
                 comment: newReview.comment,
             });
-            await refreshData();
+            await reload();
             setNewReview({ rating: 0, comment: '' });
             snackbar.success('Review submitted');
         } catch (error) {
@@ -128,7 +140,7 @@ const ShipmentDetails = () => {
     const handleUpdateStatus = async (newStatus) => {
         try {
             await axios.post(`${API_BASE}/api/shipments/${id}/status`, { status: newStatus });
-            await refreshData();
+            await reload();
             snackbar.success(newStatus === 'in_transit' ? 'Marked as picked up' : 'Marked as delivered');
         } catch (error) {
             snackbar.error('Failed to update status: ' + (error.response?.data?.error || error.message));
@@ -151,7 +163,8 @@ const ShipmentDetails = () => {
                         reason: deleteReason,
                     });
                     snackbar.success('Shipment deleted');
-                    navigate('/dashboard');
+                    onChanged?.();
+                    close();
                 } catch (error) {
                     snackbar.error('Failed to delete: ' + (error.response?.data?.error || error.message));
                 }
@@ -177,7 +190,7 @@ const ShipmentDetails = () => {
                     setShowWithdrawForm(null);
                     setWithdrawReasonCategory('');
                     setWithdrawReason('');
-                    await refreshData();
+                    await reload();
                     snackbar.success('Quote withdrawn');
                 } catch (error) {
                     snackbar.error('Failed to withdraw: ' + (error.response?.data?.error || error.message));
@@ -217,7 +230,7 @@ const ShipmentDetails = () => {
             });
             setShowDisputeForm(false);
             setNewDispute({ reason_category: '', description: '', evidence_photo_urls: [] });
-            await refreshData();
+            await reload();
             snackbar.success('Dispute filed');
         } catch (error) {
             snackbar.error('Failed to file dispute: ' + (error.response?.data?.error || error.message));
@@ -230,7 +243,7 @@ const ShipmentDetails = () => {
         try {
             await axios.post(`${API_BASE}/api/disputes/${disputeId}/${action}`,
                 action === 'withdraw' || action === 'review' ? undefined : { resolution_notes: notes });
-            await refreshData();
+            await reload();
             snackbar.success('Dispute updated');
         } catch (error) {
             snackbar.error('Failed to update dispute: ' + (error.response?.data?.error || error.message));
@@ -252,7 +265,7 @@ const ShipmentDetails = () => {
     const canFileDispute = !!acceptedQuote && (user.id === shipment.shipperId || isAcceptedTraveler);
 
     return (
-        <div className="max-w-5xl mx-auto my-10 px-4">
+        <div className={inPanel ? 'p-4 sm:p-6' : 'max-w-5xl mx-auto my-10 px-4'}>
             <ConfirmDialog
                 open={confirmDialog.open}
                 title={confirmDialog.title}
@@ -307,7 +320,7 @@ const ShipmentDetails = () => {
                             </button>
                         )}
                         <button
-                            onClick={() => navigate('/dashboard')}
+                            onClick={close}
                             aria-label="Close and return to listing"
                             className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                         >
@@ -362,9 +375,7 @@ const ShipmentDetails = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                         <h2 className="text-xl font-semibold mb-4 border-b pb-2 dark:text-white">Item Details</h2>
-                        {shipment.photo_url && (
-                            <img src={shipment.photo_url} alt="Item" className="w-full h-64 object-cover rounded-lg mb-4 bg-gray-100" />
-                        )}
+                        <ItemImage shipment={shipment} className="w-full h-64 rounded-lg mb-4" />
                         <div className="space-y-3 text-gray-700 dark:text-gray-300">
                             <p><span className="font-bold">Description:</span> {shipment.item_description || shipment.details}</p>
                             <p><span className="font-bold">Weight:</span> {shipment.weight ? `${shipment.weight} kg` : 'N/A'}</p>

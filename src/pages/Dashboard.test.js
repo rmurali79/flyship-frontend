@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import axios from 'axios';
 import Dashboard from './Dashboard';
@@ -29,6 +29,10 @@ beforeEach(() => {
         if (url.includes('/api/shipments/my-shipments')) {
             return Promise.resolve({ data: SHIPMENTS });
         }
+        const detail = url.match(/\/api\/shipments\/(\d+)$/);
+        if (detail) {
+            return Promise.resolve({ data: { ...SHIPMENTS.find(s => s.id === Number(detail[1])), shipperId: 99 } });
+        }
         return Promise.resolve({ data: [] });
     });
 });
@@ -37,9 +41,9 @@ afterEach(() => {
     jest.clearAllMocks();
 });
 
-const renderDashboard = async () => {
+const renderDashboard = async (initialEntries = ['/dashboard']) => {
     render(
-        <MemoryRouter>
+        <MemoryRouter initialEntries={initialEntries}>
             <Dashboard />
         </MemoryRouter>
     );
@@ -144,4 +148,95 @@ test('"Clear filters" resets every filter and restores the full list', async () 
     }
     expect(screen.getByLabelText('City filter')).toHaveValue('');
     expect(screen.getByLabelText('Amount value')).toHaveValue(null);
+});
+
+describe('list view', () => {
+    test('has no connector column between origin and destination', async () => {
+        await renderDashboard();
+        fireEvent.click(screen.getByLabelText('List view'));
+
+        const headers = within(screen.getByRole('table')).getAllByRole('columnheader').map(th => th.textContent);
+        expect(headers.slice(0, 2)).toEqual(['Origin', 'Destination']);
+        const firstRowCells = within(screen.getAllByRole('row')[1]).getAllByRole('cell');
+        expect(firstRowCells).toHaveLength(headers.length);
+    });
+});
+
+describe('shipment side panel', () => {
+    test('clicking a list row opens the details in a side panel over the listing', async () => {
+        await renderDashboard();
+        fireEvent.click(screen.getByLabelText('List view'));
+        fireEvent.click(screen.getAllByRole('row').find(row => within(row).queryByText('Item-Beta')));
+
+        const panel = await screen.findByRole('dialog', { name: 'Shipment details' });
+        expect(await within(panel).findByText('Item Details')).toBeInTheDocument();
+        expect(within(panel).getByText('Item-Beta')).toBeInTheDocument();
+        // The listing is still rendered behind the panel.
+        expect(screen.getByText('Item-Alpha')).toBeInTheDocument();
+    });
+
+    test('clicking a grid card opens the side panel', async () => {
+        await renderDashboard();
+        fireEvent.click(screen.getByText('Item-Gamma'));
+
+        const panel = await screen.findByRole('dialog', { name: 'Shipment details' });
+        expect(await within(panel).findByText('Item Details')).toBeInTheDocument();
+    });
+
+    test('closes with the close button, Escape, or a backdrop click', async () => {
+        await renderDashboard();
+        fireEvent.click(screen.getByText('Item-Gamma'));
+        const panel = await screen.findByRole('dialog');
+        fireEvent.click(await within(panel).findByLabelText('Close and return to listing'));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('Item-Gamma'));
+        await screen.findByRole('dialog');
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByText('Item-Gamma'));
+        await screen.findByRole('dialog');
+        fireEvent.click(screen.getByTestId('drawer-backdrop'));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    test('a shared ?shipment= link opens the panel directly', async () => {
+        await renderDashboard(['/dashboard?shipment=4']);
+        const panel = await screen.findByRole('dialog');
+        expect(await within(panel).findByText('Item Details')).toBeInTheDocument();
+        expect(within(panel).getByText('Item-Delta')).toBeInTheDocument();
+
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+});
+
+test('shipments without their own photo show a labelled illustrative image', async () => {
+    await renderDashboard();
+    expect(screen.getAllByText('Illustrative image')).toHaveLength(SHIPMENTS.length);
+});
+
+test('falls back to the item-matched image, then to a placeholder, when images fail to load', async () => {
+    axios.get.mockImplementation((url) => Promise.resolve({
+        data: url.includes('/api/shipments/my-shipments')
+            ? [{ ...SHIPMENTS[0], photo_url: 'http://localhost:3000/photos/gone.jpg', item_image_url: '/item-images/laptop.jpg' }]
+            : [],
+    }));
+    await renderDashboard();
+
+    const img = () => screen.getByRole('img', { name: 'Item-Alpha' });
+    expect(img()).toHaveAttribute('src', 'http://localhost:3000/photos/gone.jpg');
+    expect(screen.queryByText('Illustrative image')).not.toBeInTheDocument();
+
+    fireEvent.error(img());
+    expect(img().getAttribute('src')).toMatch(/\/item-images\/laptop\.jpg$/);
+    expect(screen.getByText('Illustrative image')).toBeInTheDocument();
+
+    fireEvent.error(img());
+    expect(img().getAttribute('src')).toMatch(/\/item-images\/parcel\.jpg$/);
+
+    fireEvent.error(img());
+    expect(img()).not.toHaveAttribute('src');
+    expect(screen.queryByText('Illustrative image')).not.toBeInTheDocument();
 });
