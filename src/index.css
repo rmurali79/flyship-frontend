@@ -73,7 +73,59 @@
 }
 
 body {
-  @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200;
+  @apply bg-peerpost-ink text-gray-900 dark:text-gray-100 font-sans transition-colors duration-200;
+}
+
+@layer base {
+  h1, h2, h3 { @apply font-display; }
+}
+
+/* Shared UI styles. Use these instead of hand-written utility strings so every page looks
+   the same and a change happens in one place. */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-peerpost-gold/60 focus-visible:ring-offset-1
+      dark:focus-visible:ring-offset-gray-900 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary { @apply bg-peerpost-gold text-peerpost-goldInk hover:bg-peerpost-goldHover; }
+  .btn-secondary {
+    @apply border border-gray-300 bg-white text-gray-800 hover:bg-gray-50
+      dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700;
+  }
+  .btn-danger { @apply bg-red-600 text-white hover:bg-red-700; }
+  .btn-danger-outline {
+    @apply border border-red-300 text-red-700 hover:bg-red-50
+      dark:border-red-500/40 dark:text-red-400 dark:hover:bg-red-500/10;
+  }
+  .btn-sm { @apply px-3 py-1.5 text-xs; }
+  .btn-lg { @apply px-6 py-3 text-base; }
+
+  .field {
+    @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400
+      focus:border-peerpost-gold focus:outline-none focus:ring-2 focus:ring-peerpost-gold/30
+      dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500;
+  }
+  .label { @apply mb-1.5 block text-sm font-semibold text-gray-700 dark:text-gray-300; }
+
+  .card { @apply rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800; }
+
+  .page-title { @apply font-display text-3xl font-semibold tracking-tight text-gray-900 dark:text-white; }
+  .section-title { @apply font-display text-xl font-semibold text-gray-900 dark:text-white; }
+
+  .link { @apply font-semibold text-peerpost-gold hover:text-peerpost-goldHover; }
+
+  /* Segmented control (view switches): .seg holds .seg-item buttons; the selected one also
+     gets .seg-item-active. */
+  .seg { @apply inline-flex rounded-lg bg-gray-100 p-1 dark:bg-gray-800; }
+  .seg-item {
+    @apply rounded-md px-3 py-1.5 text-sm font-semibold text-gray-500 transition hover:text-gray-800
+      dark:text-gray-400 dark:hover:text-gray-100;
+  }
+  .seg-item-active { @apply bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white; }
+
+  /* Figures: amounts, codes, dates, references. */
+  .figure { @apply font-mono tabular-nums; }
 }
 
 @media (hover: hover) and (pointer: fine) {

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axios from 'axios';
+import { formatMoney } from '../utils/money';
 
 let stripePromise = null;
 
@@ -26,7 +27,7 @@ const CARD_ELEMENT_OPTIONS = {
     },
 };
 
-const CheckoutForm = ({ quoteId, amount, onSuccess }) => {
+const CheckoutForm = ({ quoteId, amount, currency = 'USD', onSuccess }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [error, setError] = useState(null);
@@ -70,24 +71,24 @@ const CheckoutForm = ({ quoteId, amount, onSuccess }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="mt-4 p-6 border rounded-lg bg-gray-50 dark:bg-gray-700">
-            <h3 className="text-lg font-bold mb-2 dark:text-white">Payment Summary</h3>
+        <form onSubmit={handleSubmit} className="mt-4 p-6 rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900/40">
+            <h3 className="font-display text-lg font-semibold mb-2 text-gray-900 dark:text-white">Payment summary</h3>
             <div className="mb-4 text-sm text-gray-600 dark:text-gray-300 space-y-1">
                 <div className="flex justify-between">
                     <span>Quote amount</span>
-                    <span>${parseFloat(amount).toFixed(2)}</span>
+                    <span className="figure">{formatMoney(amount, currency)}</span>
                 </div>
                 <div className="flex justify-between">
                     <span>Platform fee (10%)</span>
-                    <span>${fee}</span>
+                    <span className="figure">{formatMoney(fee, currency)}</span>
                 </div>
-                <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t pt-1 mt-1">
+                <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-700 pt-1 mt-1">
                     <span>Total</span>
-                    <span>${total}</span>
+                    <span className="figure">{formatMoney(total, currency)}</span>
                 </div>
             </div>
 
-            <div className="mb-4 p-3 bg-white rounded border dark:bg-gray-600 dark:border-gray-500">
+            <div className="mb-4 p-3 rounded-lg border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-900">
                 <CardElement options={CARD_ELEMENT_OPTIONS} />
             </div>
 
@@ -95,20 +96,20 @@ const CheckoutForm = ({ quoteId, amount, onSuccess }) => {
                 Test card: 4242 4242 4242 4242 | Any future date | Any CVC
             </p>
 
-            {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+            {error && <div className="text-red-600 dark:text-red-400 text-sm mb-4">{error}</div>}
 
             <button
                 type="submit"
                 disabled={!stripe || processing}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                className="btn btn-primary btn-lg w-full"
             >
-                {processing ? 'Processing...' : `Pay $${total}`}
+                {processing ? 'Processing...' : `Pay ${formatMoney(total, currency)}`}
             </button>
         </form>
     );
 };
 
-const Payment = ({ quoteId, amount, onSuccess }) => {
+const Payment = ({ quoteId, amount, currency, onSuccess }) => {
     const [stripe, setStripe] = useState(null);
 
     useEffect(() => {
@@ -119,7 +120,7 @@ const Payment = ({ quoteId, amount, onSuccess }) => {
 
     return (
         <Elements stripe={stripe}>
-            <CheckoutForm quoteId={quoteId} amount={amount} onSuccess={onSuccess} />
+            <CheckoutForm quoteId={quoteId} amount={amount} currency={currency} onSuccess={onSuccess} />
         </Elements>
     );
 };

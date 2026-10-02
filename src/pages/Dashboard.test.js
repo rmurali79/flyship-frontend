@@ -169,7 +169,7 @@ describe('shipment side panel', () => {
         fireEvent.click(screen.getAllByRole('row').find(row => within(row).queryByText('Item-Beta')));
 
         const panel = await screen.findByRole('dialog', { name: 'Shipment details' });
-        expect(await within(panel).findByText('Item Details')).toBeInTheDocument();
+        expect(await within(panel).findByText('Item details')).toBeInTheDocument();
         expect(within(panel).getByText('Item-Beta')).toBeInTheDocument();
         // The listing is still rendered behind the panel.
         expect(screen.getByText('Item-Alpha')).toBeInTheDocument();
@@ -180,7 +180,7 @@ describe('shipment side panel', () => {
         fireEvent.click(screen.getByText('Item-Gamma'));
 
         const panel = await screen.findByRole('dialog', { name: 'Shipment details' });
-        expect(await within(panel).findByText('Item Details')).toBeInTheDocument();
+        expect(await within(panel).findByText('Item details')).toBeInTheDocument();
     });
 
     test('closes with the close button, Escape, or a backdrop click', async () => {
@@ -204,7 +204,7 @@ describe('shipment side panel', () => {
     test('a shared ?shipment= link opens the panel directly', async () => {
         await renderDashboard(['/dashboard?shipment=4']);
         const panel = await screen.findByRole('dialog');
-        expect(await within(panel).findByText('Item Details')).toBeInTheDocument();
+        expect(await within(panel).findByText('Item details')).toBeInTheDocument();
         expect(within(panel).getByText('Item-Delta')).toBeInTheDocument();
 
         fireEvent.keyDown(document, { key: 'Escape' });

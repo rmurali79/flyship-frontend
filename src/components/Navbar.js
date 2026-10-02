@@ -33,7 +33,7 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="bg-white dark:bg-gray-800 shadow-md">
+        <nav className="bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-800">
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-center h-16">
                     <Link to="/" className="flex items-center text-gray-900 dark:text-white">
@@ -48,12 +48,12 @@ const Navbar = () => {
                             <div className="relative" ref={menuRef}>
                                 <button
                                     onClick={() => setMenuOpen(!menuOpen)}
-                                    className="flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-full"
+                                    className="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-peerpost-gold/60 rounded-full"
                                 >
                                     <span className="hidden md:inline text-gray-700 dark:text-gray-300 text-sm">
                                         {user.name}
                                     </span>
-                                    <span className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-sm border-2 border-blue-700 overflow-hidden">
+                                    <span className="w-10 h-10 rounded-full bg-peerpost-gold text-peerpost-goldInk font-bold flex items-center justify-center text-sm overflow-hidden">
                                         {user.profile_picture ? (
                                             <img src={user.profile_picture} alt="Profile" className="w-full h-full rounded-full object-cover" />
                                         ) : (
@@ -62,35 +62,35 @@ const Navbar = () => {
                                     </span>
                                 </button>
                                 {menuOpen && (
-                                    <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-700 rounded-lg shadow-lg border dark:border-gray-600 py-1 z-50">
-                                        <div className="px-4 py-2 border-b dark:border-gray-600">
+                                    <div className="absolute right-0 mt-2 w-52 card shadow-lg py-1 z-50">
+                                        <div className="px-4 py-2 border-b dark:border-gray-700">
                                             <p className="font-bold text-gray-900 dark:text-white text-sm">{user.name}</p>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user.role}</p>
                                         </div>
                                         <Link
                                             to="/dashboard"
                                             onClick={() => setMenuOpen(false)}
-                                            className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm"
+                                            className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
                                         >
                                             Dashboard
                                         </Link>
                                         <Link
                                             to="/profile"
                                             onClick={() => setMenuOpen(false)}
-                                            className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm"
+                                            className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
                                         >
                                             Edit Profile
                                         </Link>
                                         <Link
                                             to="/wallet"
                                             onClick={() => setMenuOpen(false)}
-                                            className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm"
+                                            className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
                                         >
                                             Wallet
                                         </Link>
                                         <button
                                             onClick={handleLogout}
-                                            className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm border-t dark:border-gray-600"
+                                            className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm border-t dark:border-gray-700"
                                         >
                                             Logout
                                         </button>

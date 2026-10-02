@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Briefcase, DollarSign, Package, CreditCard } from 'lucide-react';
+import { formatMoney } from '../utils/money';
 
 const StatsWidget = () => {
     const { user } = useAuth();
@@ -31,11 +32,6 @@ const StatsWidget = () => {
         fetchStats();
     }, []);
 
-    // Helper to format currency
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-    };
-
     const isShipper = user.role === 'shipper' || user.role === 'both';
     const isTraveler = user.role === 'traveler' || user.role === 'both';
 
@@ -43,53 +39,30 @@ const StatsWidget = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
             {isShipper && (
                 <>
-                    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md border-l-4 border-blue-500 flex items-center justify-between">
-                        <div>
-                            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-semibold uppercase">Total Spends</div>
-                            <div className="text-lg sm:text-2xl font-bold dark:text-white mt-1">{formatCurrency(stats.totalSpends)}</div>
-                        </div>
-                        <div className="p-2 sm:p-3 bg-blue-100 rounded-full dark:bg-blue-900">
-                            <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-300" />
-                        </div>
-                    </div>
-                    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md border-l-4 border-green-500 flex items-center justify-between">
-                        <div>
-                            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-semibold uppercase">Items Shipped</div>
-                            <div className="text-lg sm:text-2xl font-bold dark:text-white mt-1">{stats.itemsShipped}</div>
-                        </div>
-                        <div className="p-2 sm:p-3 bg-green-100 rounded-full dark:bg-green-900">
-                            <Package className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 dark:text-green-300" />
-                        </div>
-                    </div>
+                    <StatTile label="Total spends" value={formatMoney(stats.totalSpends || 0)} icon={CreditCard} />
+                    <StatTile label="Items shipped" value={stats.itemsShipped ?? 0} icon={Package} />
                 </>
             )}
-
             {isTraveler && (
                 <>
-                    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md border-l-4 border-green-500 flex items-center justify-between">
-                        <div>
-                            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-semibold uppercase">Total Earnings</div>
-                            <div className="text-lg sm:text-2xl font-bold dark:text-white mt-1">{formatCurrency(stats.totalEarnings)}</div>
-                        </div>
-                        <div className="p-2 sm:p-3 bg-green-100 rounded-full dark:bg-green-900">
-                            <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 dark:text-green-300" />
-                        </div>
-                    </div>
-                    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md border-l-4 border-blue-500 flex items-center justify-between">
-                        <div>
-                            <div className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-semibold uppercase">Trips Done</div>
-                            <div className="text-lg sm:text-2xl font-bold dark:text-white mt-1">{stats.tripsDone}</div>
-                        </div>
-                        <div className="p-2 sm:p-3 bg-blue-100 rounded-full dark:bg-blue-900">
-                            <Briefcase className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-300" />
-                        </div>
-                    </div>
+                    <StatTile label="Total earnings" value={formatMoney(stats.totalEarnings || 0)} icon={DollarSign} />
+                    <StatTile label="Trips done" value={stats.tripsDone ?? 0} icon={Briefcase} />
                 </>
             )}
-
-            {/* Common or Placeholder stats if needed, but requirements specific */}
         </div>
     );
 };
+
+const StatTile = ({ label, value, icon: Icon }) => (
+    <div className="card p-4 sm:p-5 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+            <div className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</div>
+            <div className="figure mt-1.5 text-lg sm:text-2xl font-semibold text-gray-900 dark:text-white truncate">{value}</div>
+        </div>
+        <div className="flex-none p-2 sm:p-2.5 rounded-lg bg-peerpost-gold/10 text-peerpost-gold">
+            <Icon className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
+        </div>
+    </div>
+);
 
 export default StatsWidget;

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useSnackbar } from '../context/SnackbarContext';
+import { Mic } from 'lucide-react';
 
 const CreateTravelPlan = () => {
     const snackbar = useSnackbar();
@@ -108,27 +109,27 @@ const CreateTravelPlan = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto my-10 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-6 text-center dark:text-white">Create Travel Plan</h2>
+        <div className="max-w-md mx-auto my-10 card p-6 sm:p-8">
+            <h1 className="page-title mb-6 text-center">Add travel plan</h1>
 
             <button
                 type="button"
                 onClick={handleVoiceInput}
-                className={`w-full mb-6 py-3 rounded font-bold text-white transition-colors ${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
-                    }`}
+                className={`btn btn-lg w-full mb-6 ${isListening ? 'btn-danger' : 'btn-secondary'}`}
             >
-                {isListening ? 'Listening...' : '🎤 Tap to Speak'}
+                <Mic size={18} aria-hidden="true" />
+                {isListening ? 'Listening...' : 'Speak your trip'}
             </button>
-            <p className="text-center text-gray-500 text-sm mb-6 italic">
+            <p className="text-center text-gray-500 dark:text-gray-400 text-sm mb-6 italic">
                 Try saying: "Dubai to London on 25th Dec 2025"
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-gray-700 dark:text-gray-300 mb-2 font-bold">Origin</label>
+                    <label className="label">Origin</label>
                     <select
                         name="origin"
-                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="field"
                         value={formData.origin}
                         onChange={handleChange}
                         required
@@ -140,10 +141,10 @@ const CreateTravelPlan = () => {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-gray-700 dark:text-gray-300 mb-2 font-bold">Destination</label>
+                    <label className="label">Destination</label>
                     <select
                         name="destination"
-                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="field"
                         value={formData.destination}
                         onChange={handleChange}
                         required
@@ -155,21 +156,21 @@ const CreateTravelPlan = () => {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-gray-700 dark:text-gray-300 mb-2 font-bold">Travel Start Date</label>
-                    <input type="date" name="start_date" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={formData.start_date} onChange={handleChange} required />
+                    <label className="label">Travel Start Date</label>
+                    <input type="date" name="start_date" className="field" value={formData.start_date} onChange={handleChange} required />
                 </div>
                 <div>
-                    <label className="block text-gray-700 dark:text-gray-300 mb-2 font-bold">Travel End Date (Arrival)</label>
-                    <input type="date" name="end_date" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={formData.end_date} onChange={handleChange} required />
+                    <label className="label">Travel End Date (Arrival)</label>
+                    <input type="date" name="end_date" className="field" value={formData.end_date} onChange={handleChange} required />
                 </div>
                 <div>
-                    <label className="block text-gray-700 dark:text-gray-300 mb-2 font-bold">Available Baggage (kg)</label>
-                    <input type="number" step="0.1" min="0" name="available_baggage_kg" placeholder="e.g. 5.0" className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={formData.available_baggage_kg} onChange={handleChange} required />
+                    <label className="label">Available Baggage (kg)</label>
+                    <input type="number" step="0.1" min="0" name="available_baggage_kg" placeholder="e.g. 5.0" className="field" value={formData.available_baggage_kg} onChange={handleChange} required />
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Shipments heavier than this won't be shown to you as matches.</p>
                 </div>
                 <div className="flex justify-end space-x-4">
-                    <button type="button" onClick={() => navigate('/dashboard')} className="px-6 py-3 border rounded text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">Cancel</button>
-                    <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold">Add Plan</button>
+                    <button type="button" onClick={() => navigate('/dashboard')} className="btn btn-secondary btn-lg">Cancel</button>
+                    <button type="submit" className="btn btn-primary btn-lg">Add plan</button>
                 </div>
             </form>
         </div>
