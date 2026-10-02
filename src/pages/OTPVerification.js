@@ -37,21 +37,21 @@ const OTPVerification = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4 text-center dark:text-white">Verify Your Email</h2>
+        <div className="max-w-md mx-auto mt-10 card p-6 sm:p-8">
+            <h1 className="page-title mb-4 text-center">Verify your email</h1>
             <p className="mb-4 text-center text-gray-600 dark:text-gray-400">
                 An OTP has been sent to <strong>{email}</strong>.
             </p>
 
-            {message && <div className="bg-green-100 text-green-700 p-3 rounded mb-4">{message}</div>}
-            {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
+            {message && <div className="mb-4 p-3 rounded-lg bg-green-100 text-green-800 dark:bg-green-400/15 dark:text-green-300">{message}</div>}
+            {error && <div className="mb-4 p-3 rounded-lg bg-red-100 text-red-800 dark:bg-red-400/15 dark:text-red-300">{error}</div>}
 
             <form onSubmit={handleVerify}>
                 <div className="mb-4">
-                    <label className="block text-gray-700 dark:text-gray-300 mb-2">Enter OTP</label>
+                    <label className="label">Enter OTP</label>
                     <input
                         type="text"
-                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white text-center tracking-widest text-xl"
+                        className="field figure text-center tracking-[0.4em] text-xl"
                         value={otp}
                         onChange={(e) => setOtp(e.target.value)}
                         placeholder="123456"
@@ -59,14 +59,14 @@ const OTPVerification = () => {
                         required
                     />
                 </div>
-                <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition mb-4">
+                <button type="submit" className="btn btn-primary w-full transition mb-4">
                     Verify
                 </button>
             </form>
 
             <button
                 onClick={handleResend}
-                className="w-full text-blue-600 hover:underline dark:text-blue-400 text-sm"
+                className="w-full link text-sm"
             >
                 Resend OTP
             </button>

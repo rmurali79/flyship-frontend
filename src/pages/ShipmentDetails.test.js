@@ -58,7 +58,7 @@ describe('deleting a shipment', () => {
 
     test('requires a reason category before confirming', async () => {
         await renderPage();
-        fireEvent.click(screen.getByText('Delete Shipment'));
+        fireEvent.click(screen.getByText('Delete shipment'));
         fireEvent.click(screen.getByText('Confirm Delete'));
 
         expect(mockWarn).toHaveBeenCalledWith('Please select a reason');
@@ -67,7 +67,7 @@ describe('deleting a shipment', () => {
 
     test('sends the selected category and optional detail', async () => {
         await renderPage();
-        fireEvent.click(screen.getByText('Delete Shipment'));
+        fireEvent.click(screen.getByText('Delete shipment'));
         fireEvent.change(screen.getByDisplayValue('Select a reason...'), { target: { value: 'item_lost' } });
         fireEvent.change(screen.getByPlaceholderText('Additional details (optional)...'), { target: { value: 'Missing at depot' } });
         fireEvent.click(screen.getByText('Confirm Delete'));
@@ -118,12 +118,12 @@ describe('filing a dispute', () => {
     test('is only offered once there is an accepted counterparty', async () => {
         mockGet({ quotes: [] });
         await renderPage();
-        expect(screen.queryByText('File a Dispute')).not.toBeInTheDocument();
+        expect(screen.queryByText('File a dispute')).not.toBeInTheDocument();
     });
 
     test('requires a reason category, and submits description plus evidence', async () => {
         await renderPage();
-        fireEvent.click(screen.getByText('File a Dispute'));
+        fireEvent.click(screen.getByText('File a dispute'));
         fireEvent.click(screen.getByText('Submit Dispute'));
         expect(mockWarn).toHaveBeenCalledWith('Please select a reason');
 

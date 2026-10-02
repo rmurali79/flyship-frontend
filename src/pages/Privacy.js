@@ -138,7 +138,7 @@ const Privacy = () => {
                                     </ul>
                                 </div>
                             </div>
-                            <p className="mt-4 font-semibold">To exercise rights: email <a href="mailto:privacy@jetrunner.com" className="text-blue-600 hover:underline">privacy@jetrunner.com</a></p>
+                            <p className="mt-4 font-semibold">To exercise rights: email <a href="mailto:privacy@jetrunner.com" className="link">privacy@jetrunner.com</a></p>
                         </section>
 
                         <section>
@@ -177,8 +177,8 @@ const Privacy = () => {
 
                         <section>
                             <h3 className="text-lg font-bold mb-2">12. Contact</h3>
-                            <p>Email: <a href="mailto:privacy@jetrunner.com" className="text-blue-600 hover:underline">privacy@jetrunner.com</a></p>
-                            <p>Website: <a href="https://www.jetrunner.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">https://www.jetrunner.com</a></p>
+                            <p>Email: <a href="mailto:privacy@jetrunner.com" className="link">privacy@jetrunner.com</a></p>
+                            <p>Website: <a href="https://www.jetrunner.com" target="_blank" rel="noopener noreferrer" className="link">https://www.jetrunner.com</a></p>
                         </section>
                     </div>
                 </div>

@@ -105,23 +105,23 @@ const Profile = () => {
     };
 
     if (loading) {
-        return <div className="text-center dark:text-white">Loading...</div>;
+        return <div className="text-center text-gray-500 dark:text-gray-400">Loading...</div>;
     }
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-6 text-center dark:text-white">Edit Profile</h2>
-            {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
+        <div className="max-w-md mx-auto mt-10 card p-6 sm:p-8">
+            <h1 className="page-title mb-6 text-center">Edit profile</h1>
+            {error && <div className="mb-4 p-3 rounded-lg bg-red-100 text-red-800 dark:bg-red-400/15 dark:text-red-300">{error}</div>}
             <form onSubmit={handleSubmit}>
                 <div className="mb-6 flex flex-col items-center">
-                    <span className="w-20 h-20 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xl border-2 border-blue-700 overflow-hidden">
+                    <span className="w-20 h-20 rounded-full bg-peerpost-gold text-peerpost-goldInk font-bold flex items-center justify-center text-xl overflow-hidden">
                         {formData.profile_picture ? (
                             <img src={formData.profile_picture} alt="Profile" className="w-full h-full rounded-full object-cover" />
                         ) : (
                             getInitials(formData.name)
                         )}
                     </span>
-                    <label htmlFor="profile-picture-input" className="mt-3 text-sm text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">
+                    <label htmlFor="profile-picture-input" className="mt-3 text-sm link cursor-pointer">
                         {uploading ? 'Uploading...' : 'Change photo'}
                     </label>
                     <input
@@ -134,57 +134,57 @@ const Profile = () => {
                     />
                 </div>
                 <div className="mb-4">
-                    <label htmlFor="profile-name" className="block text-gray-700 dark:text-gray-300 mb-2">Name</label>
+                    <label htmlFor="profile-name" className="label">Name</label>
                     <input
                         id="profile-name"
                         type="text"
                         name="name"
-                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="field"
                         value={formData.name}
                         onChange={handleChange}
                         required
                     />
                 </div>
                 <div className="mb-4">
-                    <label htmlFor="profile-email" className="block text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                    <label htmlFor="profile-email" className="label">Email</label>
                     <input
                         id="profile-email"
                         type="email"
-                        className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-900 dark:border-gray-600 dark:text-gray-400"
+                        className="field bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
                         value={email}
                         disabled
                     />
                 </div>
                 <div className="mb-4">
-                    <label htmlFor="profile-country-code" className="block text-gray-700 dark:text-gray-300 mb-2">Country Code</label>
+                    <label htmlFor="profile-country-code" className="label">Country Code</label>
                     <input
                         id="profile-country-code"
                         type="text"
                         name="country_code"
                         placeholder="e.g. +1"
-                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="field"
                         value={formData.country_code}
                         onChange={handleChange}
                     />
                 </div>
                 <div className="mb-4">
-                    <label htmlFor="profile-mobile-number" className="block text-gray-700 dark:text-gray-300 mb-2">Mobile Number</label>
+                    <label htmlFor="profile-mobile-number" className="label">Mobile Number</label>
                     <input
                         id="profile-mobile-number"
                         type="text"
                         name="mobile_number"
                         placeholder="e.g. 1234567890"
-                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="field"
                         value={formData.mobile_number}
                         onChange={handleChange}
                     />
                 </div>
                 <div className="mb-6">
-                    <label htmlFor="profile-role" className="block text-gray-700 dark:text-gray-300 mb-2">I am a...</label>
+                    <label htmlFor="profile-role" className="label">I am a...</label>
                     <select
                         id="profile-role"
                         name="role"
-                        className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="field"
                         value={formData.role}
                         onChange={handleChange}
                     >
@@ -196,7 +196,7 @@ const Profile = () => {
                 <button
                     type="submit"
                     disabled={saving}
-                    className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-60"
+                    className="btn btn-primary w-full transition disabled:opacity-60"
                 >
                     {saving ? 'Saving...' : 'Save Changes'}
                 </button>

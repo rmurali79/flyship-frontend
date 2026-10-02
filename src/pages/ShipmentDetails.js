@@ -9,6 +9,8 @@ import Payment from '../components/Payment';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { formatDate } from '../utils/date';
 import ItemImage from '../components/ItemImage';
+import StatusPill from '../components/ui/StatusPill';
+import { formatMoney } from '../utils/money';
 
 export const DISPUTE_REASONS = [
     { value: 'item_damaged', label: 'Item damaged' },
@@ -80,7 +82,7 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
         e.preventDefault();
 
         if (parseFloat(newQuote.amount) > parseFloat(shipment.max_budget)) {
-            snackbar.warn(`Quote amount cannot exceed the budget of $${shipment.max_budget}`);
+            snackbar.warn(`Quote amount cannot exceed the budget of ${formatMoney(shipment.max_budget)}`);
             return;
         }
 
@@ -151,7 +153,7 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
         if (!deleteReasonCategory) { snackbar.warn('Please select a reason'); return; }
         setConfirmDialog({
             open: true,
-            title: 'Delete Shipment',
+            title: 'Delete shipment',
             message: 'Are you sure you want to delete this shipment? This cannot be undone. All pending quotes will be released.',
             confirmText: 'Delete',
             variant: 'danger',
@@ -277,33 +279,25 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
             />
 
             {/* Shipment Header */}
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md mb-8">
+            <div className="card p-6 sm:p-8 mb-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                     <div>
-                        <h1 className="text-3xl font-bold dark:text-white mb-2">{shipment.origin} <span className="text-gray-400">to</span> {shipment.destination}</h1>
-                        <span className={`px-3 py-1 rounded text-sm font-bold ${
-                            shipment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            shipment.status === 'accepted' ? 'bg-blue-100 text-blue-800' :
-                            shipment.status === 'deleted' ? 'bg-red-100 text-red-800' :
-                            shipment.status === 'cancelled' ? 'bg-gray-100 text-gray-800' :
-                            'bg-green-100 text-green-800'
-                        }`}>
-                            {shipment.status.toUpperCase()}
-                        </span>
+                        <h1 className="page-title mb-2">{shipment.origin} <span className="text-gray-400">to</span> {shipment.destination}</h1>
+                        <StatusPill status={shipment.status} className="text-sm" />
                         {isAcceptedTraveler && shipment.status === 'accepted' && (
                             <button
                                 onClick={() => handleUpdateStatus('in_transit')}
-                                className="ml-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-bold"
+                                className="ml-3 btn btn-primary"
                             >
-                                Mark as Picked Up
+                                Mark as picked up
                             </button>
                         )}
                         {isAcceptedTraveler && shipment.status === 'in_transit' && (
                             <button
                                 onClick={() => handleUpdateStatus('delivered')}
-                                className="ml-3 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-bold"
+                                className="ml-3 btn btn-primary"
                             >
-                                Mark as Delivered
+                                Mark as delivered
                             </button>
                         )}
                     </div>
@@ -314,9 +308,9 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                         {canDelete && (
                             <button
                                 onClick={() => setShowDeleteForm(!showDeleteForm)}
-                                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-bold"
+                                className="btn btn-danger"
                             >
-                                Delete Shipment
+                                Delete shipment
                             </button>
                         )}
                         <button
@@ -331,12 +325,12 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
 
                 {showDeleteForm && (
                     <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                        <h3 className="font-bold text-red-800 dark:text-red-300 mb-2">Delete Shipment</h3>
+                        <h3 className="font-bold text-red-800 dark:text-red-300 mb-2">Delete shipment</h3>
                         <p className="text-sm text-red-600 dark:text-red-400 mb-3">
                             All pending quotes will be released. If a quote was accepted, cancellation penalties may apply.
                         </p>
                         <select
-                            className="w-full p-2 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="field mb-3"
                             value={deleteReasonCategory}
                             onChange={(e) => setDeleteReasonCategory(e.target.value)}
                         >
@@ -344,17 +338,17 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                             {DISPUTE_REASONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                         </select>
                         <textarea
-                            className="w-full p-2 border rounded mb-3 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="field mb-3"
                             rows="2"
                             placeholder="Additional details (optional)..."
                             value={deleteReason}
                             onChange={(e) => setDeleteReason(e.target.value)}
                         />
                         <div className="flex gap-2">
-                            <button onClick={handleDeleteShipment} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-bold">
+                            <button onClick={handleDeleteShipment} className="btn btn-danger">
                                 Confirm Delete
                             </button>
-                            <button onClick={() => { setShowDeleteForm(false); setDeleteReasonCategory(''); setDeleteReason(''); }} className="px-4 py-2 border rounded text-sm dark:text-gray-300">
+                            <button onClick={() => { setShowDeleteForm(false); setDeleteReasonCategory(''); setDeleteReason(''); }} className="btn btn-secondary">
                                 Cancel
                             </button>
                         </div>
@@ -374,28 +368,28 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                        <h2 className="text-xl font-semibold mb-4 border-b pb-2 dark:text-white">Item Details</h2>
+                        <h2 className="font-display text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Item details</h2>
                         <ItemImage shipment={shipment} className="w-full h-64 rounded-lg mb-4" />
                         <div className="space-y-3 text-gray-700 dark:text-gray-300">
                             <p><span className="font-bold">Description:</span> {shipment.item_description || shipment.details}</p>
                             <p><span className="font-bold">Weight:</span> {shipment.weight ? `${shipment.weight} kg` : 'N/A'}</p>
                             <p><span className="font-bold">Dimensions:</span> {shipment.dimension_length && `${shipment.dimension_length} x ${shipment.dimension_width} x ${shipment.dimension_height} cm`}</p>
-                            <p><span className="font-bold">Max Budget:</span> {shipment.max_budget ? `$${shipment.max_budget}` : 'N/A'}</p>
+                            <p><span className="font-bold">Max budget:</span> <span className="figure">{formatMoney(shipment.max_budget)}</span></p>
                         </div>
                     </div>
 
                     <div>
-                        <h2 className="text-xl font-semibold mb-4 border-b pb-2 dark:text-white">Logistics & Delivery</h2>
+                        <h2 className="font-display text-lg font-semibold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Logistics and delivery</h2>
                         <div className="space-y-6 text-gray-700 dark:text-gray-300">
                             <div>
-                                <h3 className="font-bold text-gray-900 dark:text-white mb-2">Shipment Arrangement</h3>
+                                <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Shipment arrangement</h3>
                                 <p className="capitalize">{shipment.shipment_arrangement ? shipment.shipment_arrangement.replace('_', ' ') : 'N/A'}</p>
                                 {shipment.collection_point && (
                                     <p className="mt-1"><span className="font-semibold">Collection Point:</span> {shipment.collection_point}</p>
                                 )}
                             </div>
                             <div>
-                                <h3 className="font-bold text-gray-900 dark:text-white mb-2">Delivery Details</h3>
+                                <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">Delivery details</h3>
                                 <p><span className="font-semibold">Recipient:</span> {shipment.delivery_recipient_name || 'N/A'}</p>
                                 <p><span className="font-semibold">Address:</span> {shipment.delivery_address || 'N/A'}</p>
                                 <p className="mt-1"><span className="font-semibold">Arrangement:</span> {shipment.delivery_arrangement ? shipment.delivery_arrangement.replace('_', ' ') : 'N/A'}</p>
@@ -406,24 +400,24 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
             </div>
 
             {(shipment.escrow_amount > 0) && (
-                <div className="bg-blue-50 dark:bg-gray-700 p-8 rounded-lg shadow-md mt-6 border-l-4 border-blue-500">
-                    <h2 className="text-xl font-semibold mb-4 dark:text-white">Security & Escrow</h2>
+                <div className="card p-6 sm:p-8 mt-6">
+                    <h2 className="section-title text-lg mb-4">Security and escrow</h2>
                     <p className="text-gray-700 dark:text-gray-300 mb-2">
                         This shipment requires a security deposit from the traveler.
                     </p>
                     <div className="flex gap-8">
                         <div>
-                            <span className="block text-sm text-gray-500 dark:text-gray-400 font-bold uppercase">Escrow Amount</span>
-                            <span className="text-2xl font-bold dark:text-white">
-                                {new Intl.NumberFormat('en-US', { style: 'currency', currency: shipment.escrow_currency || 'USD' }).format(shipment.escrow_amount)}
+                            <span className="block text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wide">Escrow amount</span>
+                            <span className="figure text-2xl font-semibold text-gray-900 dark:text-white">
+                                {formatMoney(shipment.escrow_amount, shipment.escrow_currency)}
                             </span>
                         </div>
                     </div>
                 </div>
             )}
 
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold mb-6 dark:text-white">Traveler Quotes</h2>
+            <div className="card p-6 sm:p-8">
+                <h2 className="section-title mb-6">Traveler quotes</h2>
 
                 {user.role === 'shipper' && (
                     <div className="space-y-4">
@@ -438,7 +432,7 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                         />
                                         <div>
                                             <p className="font-bold text-lg dark:text-white">
-                                                {new Intl.NumberFormat('en-US', { style: 'currency', currency: quote.currency || 'USD' }).format(quote.amount)}
+                                                {formatMoney(quote.amount, quote.currency)}
                                             </p>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">
                                                 Delivery by: {formatDate(quote.delivery_date)}
@@ -465,18 +459,18 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                     </div>
                                     <div>
                                         {shipment.status === 'pending' && quote.status === 'pending' && (
-                                            <button onClick={() => handleAcceptQuote(quote.id)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                                                Accept Quote
+                                            <button onClick={() => handleAcceptQuote(quote.id)} className="btn btn-primary">
+                                                Accept quote
                                             </button>
                                         )}
                                         {quote.status === 'accepted' && (
-                                            <span className="text-green-600 font-bold px-4 py-2 border border-green-600 rounded">Accepted</span>
+                                            <StatusPill status="accepted" />
                                         )}
                                         {quote.status === 'withdrawn' && (
-                                            <span className="text-orange-600 font-bold px-3 py-1 border border-orange-400 rounded text-sm">Withdrawn</span>
+                                            <StatusPill status="withdrawn" />
                                         )}
                                         {quote.status === 'rejected' && (
-                                            <span className="text-gray-500 text-sm px-3 py-1 border rounded">Rejected</span>
+                                            <StatusPill status="rejected" />
                                         )}
                                     </div>
                                 </div>
@@ -484,6 +478,7 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                     <Payment
                                         quoteId={quote.id}
                                         amount={quote.amount}
+                                        currency={quote.currency}
                                         onSuccess={() => {
                                             snackbar.success('Payment successful!');
                                             setShowPayment(null);
@@ -499,20 +494,20 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                 {user.role === 'traveler' && (
                     <div>
                         {shipment.status === 'pending' && (
-                            <form onSubmit={handleQuoteSubmit} className="mb-8 bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
-                                <h3 className="text-lg font-bold mb-4 dark:text-white">Submit a Quote</h3>
+                            <form onSubmit={handleQuoteSubmit} className="mb-8 rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-900/40">
+                                <h3 className="font-display text-lg font-semibold text-gray-900 dark:text-white mb-4">Submit a quote</h3>
                                 <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                                    <p>Max Budget: <span className="font-bold">${shipment.max_budget}</span></p>
+                                    <p>Max budget: <span className="figure font-bold">{formatMoney(shipment.max_budget)}</span></p>
                                     <p>Reaching By: <span className="font-bold">{formatDate(shipment.reach_latest_by)}</span></p>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                     <div>
-                                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">Amount</label>
-                                        <input type="number" step="0.01" className="w-full p-2 border rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white" value={newQuote.amount} onChange={(e) => setNewQuote({ ...newQuote, amount: e.target.value })} required placeholder="0.00" max={shipment.max_budget} />
+                                        <label className="label">Amount</label>
+                                        <input type="number" step="0.01" className="field" value={newQuote.amount} onChange={(e) => setNewQuote({ ...newQuote, amount: e.target.value })} required placeholder="0.00" max={shipment.max_budget} />
                                     </div>
                                     <div>
-                                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">Currency</label>
-                                        <select className="w-full p-2 border rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white" value={newQuote.currency || 'USD'} onChange={(e) => setNewQuote({ ...newQuote, currency: e.target.value })}>
+                                        <label className="label">Currency</label>
+                                        <select className="field" value={newQuote.currency || 'USD'} onChange={(e) => setNewQuote({ ...newQuote, currency: e.target.value })}>
                                             <option value="USD">USD ($)</option>
                                             <option value="EUR">EUR (€)</option>
                                             <option value="SGD">SGD (S$)</option>
@@ -520,27 +515,27 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">Delivery Date</label>
-                                        <input type="date" className="w-full p-2 border rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white" value={newQuote.delivery_date} onChange={(e) => setNewQuote({ ...newQuote, delivery_date: e.target.value })} required max={shipment.reach_latest_by} />
+                                        <label className="label">Delivery Date</label>
+                                        <input type="date" className="field" value={newQuote.delivery_date} onChange={(e) => setNewQuote({ ...newQuote, delivery_date: e.target.value })} required max={shipment.reach_latest_by} />
                                     </div>
                                     <div className="mb-4">
-                                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">Message (Optional)</label>
-                                        <textarea className="w-full p-2 border rounded dark:bg-gray-600 dark:border-gray-500 dark:text-white" rows="3" placeholder="Add a note about your travel schedule or delivery details..." value={newQuote.message} onChange={(e) => setNewQuote({ ...newQuote, message: e.target.value })} />
+                                        <label className="label">Message (Optional)</label>
+                                        <textarea className="field" rows="3" placeholder="Add a note about your travel schedule or delivery details..." value={newQuote.message} onChange={(e) => setNewQuote({ ...newQuote, message: e.target.value })} />
                                     </div>
                                 </div>
-                                <button type="submit" className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-bold w-full md:w-auto">
-                                    Submit Quote
+                                <button type="submit" className="btn btn-primary w-full md:w-auto">
+                                    Submit quote
                                 </button>
                             </form>
                         )}
 
-                        <h3 className="font-bold mb-4 dark:text-white">Existing Quotes</h3>
+                        <h3 className="font-display font-semibold mb-4 text-gray-900 dark:text-white">Existing quotes</h3>
                         <div className="space-y-2">
                             {quotes.map(quote => (
                                 <div key={quote.id} className={`border p-3 rounded bg-white dark:bg-gray-700 dark:border-gray-600 ${quote.status === 'withdrawn' ? 'opacity-60' : ''}`}>
                                     <div className="flex justify-between items-center">
                                         <div className="dark:text-white font-medium">
-                                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: quote.currency || 'USD' }).format(quote.amount)}
+                                            {formatMoney(quote.amount, quote.currency)}
                                             {' - '}
                                             {formatDate(quote.delivery_date)}
                                             {quote.message && (
@@ -554,18 +549,11 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                             )}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-sm px-2 py-1 rounded ${
-                                                quote.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                quote.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                                                quote.status === 'withdrawn' ? 'bg-orange-100 text-orange-800' :
-                                                'bg-gray-100'
-                                            }`}>
-                                                {quote.status.toUpperCase()}
-                                            </span>
+                                            <StatusPill status={quote.status} />
                                             {(quote.status === 'pending' || quote.status === 'accepted') && quote.traveler_id === user.id && (
                                                 <button
                                                     onClick={() => { setShowWithdrawForm(showWithdrawForm === quote.id ? null : quote.id); setWithdrawReasonCategory(''); setWithdrawReason(''); }}
-                                                    className="text-sm text-orange-600 hover:text-orange-800 font-bold px-2 py-1 border border-orange-400 rounded"
+                                                    className="btn btn-danger-outline btn-sm"
                                                 >
                                                     Withdraw
                                                 </button>
@@ -575,7 +563,7 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                     {showWithdrawForm === quote.id && (
                                         <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-200 dark:border-orange-800">
                                             <select
-                                                className="w-full p-2 border rounded mb-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                className="field mb-2 text-sm"
                                                 value={withdrawReasonCategory}
                                                 onChange={(e) => setWithdrawReasonCategory(e.target.value)}
                                             >
@@ -583,17 +571,17 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                                 {DISPUTE_REASONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                                             </select>
                                             <textarea
-                                                className="w-full p-2 border rounded mb-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                className="field mb-2 text-sm"
                                                 rows="2"
                                                 placeholder="Additional details (optional)..."
                                                 value={withdrawReason}
                                                 onChange={(e) => setWithdrawReason(e.target.value)}
                                             />
                                             <div className="flex gap-2">
-                                                <button onClick={() => handleWithdrawQuote(quote.id)} className="bg-orange-600 text-white px-3 py-1 rounded text-sm font-bold hover:bg-orange-700">
+                                                <button onClick={() => handleWithdrawQuote(quote.id)} className="btn btn-danger btn-sm">
                                                     Confirm Withdraw
                                                 </button>
-                                                <button onClick={() => { setShowWithdrawForm(null); setWithdrawReasonCategory(''); setWithdrawReason(''); }} className="px-3 py-1 border rounded text-sm dark:text-gray-300">
+                                                <button onClick={() => { setShowWithdrawForm(null); setWithdrawReasonCategory(''); setWithdrawReason(''); }} className="btn btn-secondary btn-sm">
                                                     Cancel
                                                 </button>
                                             </div>
@@ -608,21 +596,21 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
             </div>
 
             {canFileDispute && (
-                <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md mt-6">
+                <div className="card p-6 sm:p-8 mt-6">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold dark:text-white">Disputes</h2>
+                        <h2 className="section-title">Disputes</h2>
                         <button
                             onClick={() => setShowDisputeForm(!showDisputeForm)}
-                            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-bold"
+                            className="btn btn-danger"
                         >
-                            File a Dispute
+                            File a dispute
                         </button>
                     </div>
 
                     {showDisputeForm && (
-                        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border dark:border-gray-600">
+                        <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/40">
                             <select
-                                className="w-full p-2 border rounded mb-3 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                                className="field mb-3"
                                 value={newDispute.reason_category}
                                 onChange={(e) => setNewDispute({ ...newDispute, reason_category: e.target.value })}
                             >
@@ -630,13 +618,13 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                 {DISPUTE_REASONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                             </select>
                             <textarea
-                                className="w-full p-2 border rounded mb-3 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                                className="field mb-3"
                                 rows="3"
                                 placeholder="Describe what happened (optional)..."
                                 value={newDispute.description}
                                 onChange={(e) => setNewDispute({ ...newDispute, description: e.target.value })}
                             />
-                            <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-semibold">Evidence photos</label>
+                            <label className="label text-sm font-semibold">Evidence photos</label>
                             <input type="file" accept="image/*" className="mb-2 text-sm text-gray-500 dark:text-gray-300" onChange={handleEvidenceUpload} />
                             {newDispute.evidence_photo_urls.length > 0 && (
                                 <div className="flex gap-2 flex-wrap mb-3">
@@ -646,12 +634,12 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                 </div>
                             )}
                             <div className="flex gap-2">
-                                <button onClick={handleFileDispute} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-bold">
+                                <button onClick={handleFileDispute} className="btn btn-danger">
                                     Submit Dispute
                                 </button>
                                 <button
                                     onClick={() => { setShowDisputeForm(false); setNewDispute({ reason_category: '', description: '', evidence_photo_urls: [] }); }}
-                                    className="px-4 py-2 border rounded text-sm dark:text-gray-300"
+                                    className="btn btn-secondary"
                                 >
                                     Cancel
                                 </button>
@@ -668,21 +656,13 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                 const isFiler = dispute.filed_by_user_id === user.id;
                                 const isActionable = dispute.status === 'open' || dispute.status === 'under_review';
                                 return (
-                                    <div key={dispute.id} className="border rounded-lg p-4 dark:border-gray-700">
+                                    <div key={dispute.id} className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
                                                 <p className="font-bold dark:text-white">{reasonLabel(dispute.reason_category)}</p>
                                                 {dispute.description && <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{dispute.description}</p>}
                                             </div>
-                                            <span className={`text-sm px-2 py-1 rounded font-bold ${
-                                                dispute.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                                                dispute.status === 'rejected' ? 'bg-gray-100 text-gray-800' :
-                                                dispute.status === 'withdrawn' ? 'bg-gray-100 text-gray-500' :
-                                                dispute.status === 'under_review' ? 'bg-blue-100 text-blue-800' :
-                                                'bg-yellow-100 text-yellow-800'
-                                            }`}>
-                                                {dispute.status.replace('_', ' ').toUpperCase()}
-                                            </span>
+                                            <StatusPill status={dispute.status} />
                                         </div>
                                         {dispute.evidence?.length > 0 && (
                                             <div className="flex gap-2 flex-wrap mb-2">
@@ -701,7 +681,7 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                                 {isRespondent && (
                                                     <>
                                                         <textarea
-                                                            className="w-full p-2 border rounded mb-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                                            className="field mb-2 text-sm"
                                                             rows="2"
                                                             placeholder="Notes (required to reject, optional to accept)..."
                                                             value={resolutionNotesByDispute[dispute.id] || ''}
@@ -709,21 +689,21 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                                         />
                                                         <div className="flex gap-2 flex-wrap">
                                                             {dispute.status === 'open' && (
-                                                                <button onClick={() => handleDisputeAction(dispute.id, 'review')} className="px-3 py-1 border rounded text-sm dark:text-gray-300">
+                                                                <button onClick={() => handleDisputeAction(dispute.id, 'review')} className="btn btn-secondary btn-sm">
                                                                     Mark Under Review
                                                                 </button>
                                                             )}
-                                                            <button onClick={() => handleDisputeAction(dispute.id, 'accept')} className="bg-green-600 text-white px-3 py-1 rounded text-sm font-bold hover:bg-green-700">
+                                                            <button onClick={() => handleDisputeAction(dispute.id, 'accept')} className="btn btn-primary btn-sm">
                                                                 Accept
                                                             </button>
-                                                            <button onClick={() => handleDisputeAction(dispute.id, 'reject')} className="bg-gray-600 text-white px-3 py-1 rounded text-sm font-bold hover:bg-gray-700">
+                                                            <button onClick={() => handleDisputeAction(dispute.id, 'reject')} className="btn btn-secondary btn-sm">
                                                                 Reject
                                                             </button>
                                                         </div>
                                                     </>
                                                 )}
                                                 {isFiler && (
-                                                    <button onClick={() => handleDisputeAction(dispute.id, 'withdraw')} className="mt-2 px-3 py-1 border rounded text-sm dark:text-gray-300">
+                                                    <button onClick={() => handleDisputeAction(dispute.id, 'withdraw')} className="mt-2 btn btn-secondary btn-sm">
                                                         Withdraw Dispute
                                                     </button>
                                                 )}
@@ -738,8 +718,8 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
             )}
 
             {isReviewParticipant && (
-                <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md mt-6">
-                    <h2 className="text-2xl font-bold mb-6 dark:text-white">Delivery Review</h2>
+                <div className="card p-6 sm:p-8 mt-6">
+                    <h2 className="section-title mb-6">Delivery review</h2>
 
                     {myReview ? (
                         <div className="mb-6">
@@ -757,8 +737,8 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                             {myReview.comment && <p className="text-gray-700 dark:text-gray-300 italic">"{myReview.comment}"</p>}
                         </div>
                     ) : (
-                        <div className="mb-6 bg-gray-50 dark:bg-gray-700 p-6 rounded-lg">
-                            <h3 className="text-lg font-bold mb-4 dark:text-white">Rate {otherPartyLabel}</h3>
+                        <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-900/40">
+                            <h3 className="font-display text-lg font-semibold text-gray-900 dark:text-white mb-4">Rate {otherPartyLabel}</h3>
                             <div className="flex items-center gap-1 mb-4">
                                 {[1, 2, 3, 4, 5].map(n => (
                                     <button key={n} type="button" onClick={() => setNewReview({ ...newReview, rating: n })}>
@@ -771,13 +751,13 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                                 ))}
                             </div>
                             <textarea
-                                className="w-full p-2 border rounded mb-4 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                                className="field mb-4"
                                 rows="3"
                                 placeholder="Leave a comment (optional)..."
                                 value={newReview.comment}
                                 onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
                             />
-                            <button onClick={handleReviewSubmit} className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-bold">
+                            <button onClick={handleReviewSubmit} className="btn btn-primary">
                                 Submit Review
                             </button>
                         </div>
@@ -804,13 +784,13 @@ const ShipmentDetails = ({ shipmentId, onClose, onChanged }) => {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md mt-6">
-                <h2 className="text-2xl font-bold mb-6 dark:text-white">Tracking History</h2>
-                <div className="relative border-l-4 border-blue-500 ml-4">
+            <div className="card p-6 sm:p-8 mt-6">
+                <h2 className="section-title mb-6">Tracking history</h2>
+                <div className="relative border-l-2 border-peerpost-gold/60 ml-3">
                     {shipment.History && shipment.History.length > 0 ? (
                         shipment.History.map((history, index) => (
                             <div key={index} className="mb-8 ml-6">
-                                <span className="absolute -left-3 bg-blue-500 h-6 w-6 rounded-full border-4 border-white dark:border-gray-800"></span>
+                                <span className="absolute -left-[9px] mt-1.5 bg-peerpost-gold h-4 w-4 rounded-full border-[3px] border-white dark:border-gray-800"></span>
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">{history.status.replace('_', ' ')}</h3>
                                 <time className="block mb-2 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">
                                     {new Date(history.timestamp).toLocaleString()}
