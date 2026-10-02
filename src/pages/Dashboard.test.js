@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import axios from 'axios';
-import Dashboard from './Dashboard';
+import Dashboard, { deadlineInfo } from './Dashboard';
 
 jest.mock('axios');
 
@@ -214,7 +214,8 @@ describe('shipment side panel', () => {
 
 test('shipments without their own photo show a labelled illustrative image', async () => {
     await renderDashboard();
-    expect(screen.getAllByText('Illustrative image')).toHaveLength(SHIPMENTS.length);
+    // Grid thumbnails are too small for the overlay label, so it's the tooltip.
+    expect(screen.getAllByTitle('Illustrative image')).toHaveLength(SHIPMENTS.length);
 });
 
 test('falls back to the item-matched image, then to a placeholder, when images fail to load', async () => {
@@ -227,16 +228,55 @@ test('falls back to the item-matched image, then to a placeholder, when images f
 
     const img = () => screen.getByRole('img', { name: 'Item-Alpha' });
     expect(img()).toHaveAttribute('src', 'http://localhost:3000/photos/gone.jpg');
-    expect(screen.queryByText('Illustrative image')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Illustrative image')).not.toBeInTheDocument();
 
     fireEvent.error(img());
     expect(img().getAttribute('src')).toMatch(/\/item-images\/laptop\.jpg$/);
-    expect(screen.getByText('Illustrative image')).toBeInTheDocument();
+    expect(screen.getByTitle('Illustrative image')).toBeInTheDocument();
 
     fireEvent.error(img());
     expect(img().getAttribute('src')).toMatch(/\/item-images\/parcel\.jpg$/);
 
     fireEvent.error(img());
     expect(img()).not.toHaveAttribute('src');
-    expect(screen.queryByText('Illustrative image')).not.toBeInTheDocument();
+});
+
+describe('deadline label', () => {
+    const today = new Date(2026, 9, 2); // 2 Oct 2026
+
+    test('shows the date, with the year only when it is not this year', () => {
+        expect(deadlineInfo('2026-11-20', 'pending', today)).toEqual({ text: 'Due 20 Nov', tone: 'normal' });
+        expect(deadlineInfo('2027-01-14', 'pending', today)).toEqual({ text: 'Due 14 Jan 2027', tone: 'normal' });
+    });
+
+    test('flags open shipments that are due soon or overdue', () => {
+        expect(deadlineInfo('2026-10-02', 'accepted', today)).toEqual({ text: 'Due today', tone: 'soon' });
+        expect(deadlineInfo('2026-10-03', 'pending', today)).toEqual({ text: 'Due in 1 day', tone: 'soon' });
+        expect(deadlineInfo('2026-10-05', 'in_transit', today)).toEqual({ text: 'Due in 3 days', tone: 'soon' });
+        expect(deadlineInfo('2026-01-14', 'pending', today)).toEqual({ text: 'Overdue · 14 Jan', tone: 'overdue' });
+    });
+
+    test('never flags a delivered shipment', () => {
+        expect(deadlineInfo('2026-01-14', 'delivered', today)).toEqual({ text: 'Due 14 Jan', tone: 'normal' });
+    });
+
+    test('handles a missing or malformed date', () => {
+        expect(deadlineInfo(null, 'pending', today)).toBeNull();
+        expect(deadlineInfo('not-a-date', 'pending', today)).toBeNull();
+    });
+});
+
+test('grid cards show airport-style codes, item, weight and budget in USD', async () => {
+    axios.get.mockImplementation((url) => {
+        if (url.includes('/api/cities')) return Promise.resolve({ data: [{ name: 'Hong Kong', code: 'HKG' }, { name: 'Sydney', code: 'SYD' }] });
+        if (url.includes('/api/shipments/my-shipments')) return Promise.resolve({ data: [SHIPMENTS[0]] });
+        return Promise.resolve({ data: [] });
+    });
+    await renderDashboard();
+    const card = screen.getByRole('link', { name: /Item-Alpha/ });
+    expect(await within(card).findByText('HKG')).toBeInTheDocument();
+    expect(within(card).getByText('SYD')).toBeInTheDocument();
+    expect(within(card).getByText('4.75 kg')).toBeInTheDocument();
+    expect(within(card).getByText('USD 86.63')).toBeInTheDocument();
+    expect(within(card).getByText('Pending')).toBeInTheDocument();
 });
