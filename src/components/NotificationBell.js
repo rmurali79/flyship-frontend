@@ -91,9 +91,9 @@ const NotificationBell = () => {
             {open && (
                 <div
                     data-testid="notification-panel"
-                    className="fixed inset-y-0 right-0 top-16 w-80 bg-white dark:bg-gray-700 shadow-lg border-l dark:border-gray-700 z-50 flex flex-col"
+                    className="fixed inset-y-0 right-0 top-16 w-80 bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 z-50 flex flex-col"
                 >
-                    <div className="px-4 py-2 border-b dark:border-gray-700 flex items-center justify-between">
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                         <p className="font-bold text-gray-900 dark:text-white text-sm">Notifications</p>
                         {hasUnread && (
                             <button onClick={markAllAsRead} className="text-xs link">
