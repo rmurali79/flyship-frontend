@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import FlyshipMark from './FlyshipMark';
 import NotificationBell from './NotificationBell';
+import ThemeToggle from './ThemeToggle';
 
 const getInitials = (name) => {
     if (!name) return '?';
@@ -14,19 +15,8 @@ const getInitials = (name) => {
 const Navbar = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const [darkMode, setDarkMode] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
-
-    useEffect(() => {
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            setDarkMode(true);
-            document.documentElement.classList.add('dark');
-        } else {
-            setDarkMode(false);
-            document.documentElement.classList.remove('dark');
-        }
-    }, []);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -35,18 +25,6 @@ const Navbar = () => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
-
-    const toggleDarkMode = () => {
-        if (darkMode) {
-            document.documentElement.classList.remove('dark');
-            localStorage.theme = 'light';
-            setDarkMode(false);
-        } else {
-            document.documentElement.classList.add('dark');
-            localStorage.theme = 'dark';
-            setDarkMode(true);
-        }
-    };
 
     const handleLogout = () => {
         logout();
@@ -63,6 +41,7 @@ const Navbar = () => {
                     </Link>
 
                     <div className="flex items-center space-x-2 md:space-x-4">
+                        <ThemeToggle />
                         {user ? (
                             <>
                             <NotificationBell />
@@ -109,24 +88,6 @@ const Navbar = () => {
                                         >
                                             Wallet
                                         </Link>
-                                        <div className="px-4 py-2 border-t dark:border-gray-600 flex items-center justify-between">
-                                            <span className="text-sm text-gray-700 dark:text-gray-200">Dark mode</span>
-                                            <button
-                                                type="button"
-                                                role="switch"
-                                                aria-checked={darkMode}
-                                                onClick={toggleDarkMode}
-                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                                                    darkMode ? 'bg-blue-600' : 'bg-gray-300'
-                                                }`}
-                                            >
-                                                <span
-                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                                        darkMode ? 'translate-x-6' : 'translate-x-1'
-                                                    }`}
-                                                />
-                                            </button>
-                                        </div>
                                         <button
                                             onClick={handleLogout}
                                             className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 text-sm border-t dark:border-gray-600"

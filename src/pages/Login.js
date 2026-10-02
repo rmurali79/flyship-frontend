@@ -18,7 +18,7 @@ const EyeOffIcon = () => (
     </svg>
 );
 
-const inputClass = "w-full h-11 rounded-[9px] border border-peerpost-borderStrong bg-peerpost-ink text-peerpost-heading placeholder-peerpost-faint px-3.5 text-[14.5px] font-body focus:outline-none focus:ring-2 focus:ring-peerpost-gold/60";
+const inputClass = "pp-field w-full h-11 rounded-[9px] border border-peerpost-borderStrong bg-peerpost-ink text-peerpost-heading placeholder-peerpost-faint px-3.5 text-[14.5px] font-body focus:outline-none focus:ring-2 focus:ring-peerpost-gold/60";
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -47,7 +47,7 @@ const Login = () => {
                 </div>
 
                 {error && (
-                    <div className="mb-5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm p-3 font-body">
+                    <div className="mb-5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-300 text-sm p-3 font-body">
                         {error}
                     </div>
                 )}

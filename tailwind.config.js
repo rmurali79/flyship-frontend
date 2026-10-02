@@ -7,19 +7,20 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Theme-aware: values live in src/index.css (light on :root, dark on .dark).
         peerpost: {
-          ink: 'oklch(0.17 0.03 255)',
-          surface: 'oklch(0.20 0.03 255)',
-          border: 'oklch(1 0 0 / 0.08)',
-          borderStrong: 'oklch(1 0 0 / 0.12)',
-          heading: 'oklch(0.97 0.01 95)',
-          body: 'oklch(0.82 0.02 255)',
-          muted: 'oklch(0.62 0.02 255)',
-          faint: 'oklch(0.58 0.02 255)',
-          gold: 'oklch(0.80 0.15 85)',
-          goldHover: 'oklch(0.88 0.12 85)',
-          goldInk: 'oklch(0.14 0.03 255)',
-          teal: 'oklch(0.80 0.15 170)',
+          ink: 'oklch(var(--pp-ink) / <alpha-value>)',
+          surface: 'var(--pp-surface)',
+          border: 'var(--pp-border)',
+          borderStrong: 'var(--pp-border-strong)',
+          heading: 'oklch(var(--pp-heading) / <alpha-value>)',
+          body: 'oklch(var(--pp-body) / <alpha-value>)',
+          muted: 'oklch(var(--pp-muted) / <alpha-value>)',
+          faint: 'oklch(var(--pp-faint) / <alpha-value>)',
+          gold: 'oklch(var(--pp-gold) / <alpha-value>)',
+          goldHover: 'oklch(var(--pp-gold-hover) / <alpha-value>)',
+          goldInk: 'oklch(var(--pp-gold-ink) / <alpha-value>)',
+          teal: 'oklch(var(--pp-teal) / <alpha-value>)',
         },
       },
       fontFamily: {
