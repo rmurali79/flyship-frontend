@@ -1,11 +1,29 @@
 import React from 'react';
+import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 // Theme switch from the PeerPost reference design (reference/Index-html/Motion.dc.html):
 // a pill track whose thumb slides right for light mode, showing a moon (dark) or sun (light).
-const ThemeToggle = () => {
+// `compact` is an icon button with the same behavior, for the busier logged-in top bar.
+const ThemeToggle = ({ compact = false }) => {
     const { theme, toggleTheme } = useTheme();
     const isDark = theme === 'dark';
+
+    if (compact) {
+        return (
+            <button
+                type="button"
+                role="switch"
+                aria-checked={isDark}
+                aria-label="Dark mode"
+                title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                onClick={toggleTheme}
+                className="p-2 rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-peerpost-gold/60"
+            >
+                {isDark ? <Moon size={20} aria-hidden="true" /> : <Sun size={20} aria-hidden="true" />}
+            </button>
+        );
+    }
 
     return (
         <button
