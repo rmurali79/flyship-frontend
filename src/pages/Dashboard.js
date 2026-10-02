@@ -3,7 +3,7 @@ import API_BASE from '../config/api';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { Plane, LayoutGrid, List } from 'lucide-react';
+import { Plane, LayoutGrid, List, Scale } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from '../context/SnackbarContext';
 import { formatDate } from '../utils/date';
@@ -27,13 +27,23 @@ const FlightPath = ({ className = '', showPlane = true }) => (
 
 // Resolves a city name to its photo via cityMap; falls back to a code tile
 // (e.g. "BER") when there's no photo on file, or if the photo fails to load.
+const findCity = (name, cityMap) => {
+    const lower = name.toLowerCase();
+    const key = cityMap[lower] ? lower : Object.keys(cityMap).find(k => lower.includes(k));
+    return key ? cityMap[key] : null;
+};
+
+// Airport-style code for a city ("NYC"); cities not on file use their first three letters.
+const cityCode = (name, cityMap) => (name ? findCity(name, cityMap)?.code || name.slice(0, 3).toUpperCase() : '—');
+
+// The city name shown under its code, unless the name is just the code again ("LON").
+const cityLabel = (name, cityMap) => (name && name.toUpperCase() !== cityCode(name, cityMap) ? name : '');
+
 const CityThumb = ({ name, cityMap, size = 'default' }) => {
     const [errored, setErrored] = useState(false);
     if (!name) return null;
 
-    const lower = name.toLowerCase();
-    const key = cityMap[lower] ? lower : Object.keys(cityMap).find(k => lower.includes(k));
-    const entry = key ? cityMap[key] : null;
+    const entry = findCity(name, cityMap);
     const rawUrl = entry?.imageUrl;
     const resolvedUrl = rawUrl ? (rawUrl.startsWith('http') ? rawUrl : API_BASE + rawUrl) : null;
     const code = entry?.code || name.slice(0, 3).toUpperCase();
@@ -535,13 +545,67 @@ const Dashboard = () => {
     );
 };
 
-const statusBadgeClasses = (status) =>
-    `px-2 py-1 rounded text-xs font-semibold whitespace-nowrap ${status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-        status === 'accepted' ? 'bg-blue-100 text-blue-800' :
-            'bg-green-100 text-green-800'
-    }`;
+const STATUS_STYLES = {
+    pending: 'bg-amber-100 text-amber-800 dark:bg-amber-400/15 dark:text-amber-300',
+    accepted: 'bg-blue-100 text-blue-800 dark:bg-blue-400/15 dark:text-blue-300',
+    in_transit: 'bg-violet-100 text-violet-800 dark:bg-violet-400/15 dark:text-violet-300',
+    delivered: 'bg-green-100 text-green-800 dark:bg-green-400/15 dark:text-green-300',
+};
+
+const StatusPill = ({ status }) => (
+    <span className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${STATUS_STYLES[status] || 'bg-gray-100 text-gray-700 dark:bg-gray-400/15 dark:text-gray-300'}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
+    </span>
+);
+
+// Budgets are entered in USD. Shown with the ISO code ("USD 50"), never a bare "$".
+const formatBudget = (amount) => {
+    const value = Number(amount);
+    if (amount == null || amount === '' || Number.isNaN(value)) return '—';
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', currencyDisplay: 'code', minimumFractionDigits: 0, maximumFractionDigits: 2,
+    }).format(value);
+};
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// "Due 14 Jan" (year shown when it isn't this year). Only an open shipment's deadline can be
+// close or overdue; that's the one case it gets color.
+export const deadlineInfo = (dateString, status, today = new Date()) => {
+    if (!dateString) return null;
+    const [y, m, d] = String(dateString).slice(0, 10).split('-').map(Number);
+    if (!y || !m || !d) return null;
+    const due = new Date(y, m - 1, d);
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const days = Math.round((due - startOfToday) / DAY_MS);
+    const date = `${d} ${MONTHS[m - 1]}${y !== today.getFullYear() ? ` ${y}` : ''}`;
+    const open = status !== 'delivered' && status !== 'cancelled' && status !== 'deleted';
+    if (open && days < 0) return { text: `Overdue · ${date}`, tone: 'overdue' };
+    if (open && days <= 3) return { text: days === 0 ? 'Due today' : `Due in ${days} day${days === 1 ? '' : 's'}`, tone: 'soon' };
+    return { text: `Due ${date}`, tone: 'normal' };
+};
+
+const DEADLINE_TONES = {
+    overdue: 'text-red-600 dark:text-red-400 font-medium',
+    soon: 'text-amber-700 dark:text-amber-400 font-medium',
+    normal: 'text-gray-500 dark:text-gray-400',
+};
+
+const Deadline = ({ shipment, className = '', placeholder = null }) => {
+    const info = deadlineInfo(shipment.reach_latest_by, shipment.status);
+    if (!info) return placeholder && <span className={`text-xs text-gray-400 ${className}`}>{placeholder}</span>;
+    return <span className={`text-xs whitespace-nowrap ${DEADLINE_TONES[info.tone]} ${className}`}>{info.text}</span>;
+};
 
 const shipmentLink = (shipment) => ({ search: `?shipment=${shipment.id}` });
+
+const CityCell = ({ name, cityMap }) => (
+    <div className="flex items-baseline gap-2 whitespace-nowrap">
+        <span className="font-mono font-medium text-gray-900 dark:text-gray-100">{cityCode(name, cityMap)}</span>
+        <span className="text-gray-500 dark:text-gray-400">{cityLabel(name, cityMap)}</span>
+    </div>
+);
 
 const ShipmentRow = ({ shipment, cityMap }) => {
     const navigate = useNavigate();
@@ -550,83 +614,72 @@ const ShipmentRow = ({ shipment, cityMap }) => {
             onClick={() => navigate(shipmentLink(shipment), { state: { fromListing: true } })}
             className="border-b last:border-0 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer"
         >
-            <td className="p-3">
-                <div className="flex items-center gap-2">
-                    <CityThumb name={shipment.origin} cityMap={cityMap} size="small" />
-                    <span className="font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">{shipment.origin}</span>
-                </div>
-            </td>
-            <td className="p-3">
-                <div className="flex items-center gap-2">
-                    <CityThumb name={shipment.destination} cityMap={cityMap} size="small" />
-                    <span className="font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">{shipment.destination}</span>
-                </div>
-            </td>
-            <td className="p-3 max-w-xs truncate text-gray-600 dark:text-gray-400">
+            <td className="p-3"><CityCell name={shipment.origin} cityMap={cityMap} /></td>
+            <td className="p-3"><CityCell name={shipment.destination} cityMap={cityMap} /></td>
+            <td className="p-3 max-w-xs truncate font-medium text-gray-800 dark:text-gray-200">
                 {shipment.item_description || 'No description'}
             </td>
             <td className="p-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
                 {shipment.weight ? `${shipment.weight} kg` : '—'}
             </td>
-            <td className="p-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                {shipment.max_budget ? `$${shipment.max_budget}` : '—'}
+            <td className="p-3 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                {formatBudget(shipment.max_budget)}
             </td>
-            <td className="p-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                {shipment.reach_latest_by ? formatDate(shipment.reach_latest_by) : '—'}
-            </td>
-            <td className="p-3">
-                <span className={statusBadgeClasses(shipment.status)}>{shipment.status.toUpperCase()}</span>
-            </td>
-            <td className="p-3 text-blue-600 text-sm whitespace-nowrap">View →</td>
+            <td className="p-3"><Deadline shipment={shipment} placeholder="—" /></td>
+            <td className="p-3"><StatusPill status={shipment.status} /></td>
+            <td className="p-3 text-gray-400 dark:text-gray-500"><span aria-hidden="true">›</span></td>
         </tr>
     );
 };
 
-const ShipmentCard = ({ shipment, cityMap }) => {
-    return (
-        <Link to={shipmentLink(shipment)} state={{ fromListing: true }} className="block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border dark:border-gray-700 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-500 transition-all cursor-pointer">
-            <div className="flex flex-col md:flex-row gap-4 mb-4">
-                <div className="flex flex-col">
-                    <ItemImage shipment={shipment} className="w-full md:w-32 h-32 rounded-md flex-shrink-0 mb-2" />
-                    <p className="text-gray-800 dark:text-gray-300 font-medium mb-1 max-w-xs">
-                        {shipment.item_description || 'No description'}
-                    </p>
-                    {shipment.weight && (
-                        <p className="text-gray-500 dark:text-gray-400 text-xs">⚖️ {shipment.weight} kg</p>
-                    )}
-                    {shipment.max_budget && (
-                        <p className="text-gray-500 dark:text-gray-400 text-xs">💰 Budget: {shipment.max_budget}</p>
-                    )}
+// Boarding-pass card: the route up top (airport-style codes joined by a flight path), a
+// tear line, then the parcel with its photo, weight and budget. The whole card opens the
+// details panel.
+const ShipmentCard = ({ shipment, cityMap }) => (
+    <Link
+        to={shipmentLink(shipment)}
+        state={{ fromListing: true }}
+        className="group block bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-gray-300 dark:hover:border-gray-600 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+    >
+        <div className="px-5 pt-4 pb-4">
+            <div className="flex items-center justify-between h-5 mb-4">
+                <StatusPill status={shipment.status} />
+                <Deadline shipment={shipment} />
+            </div>
+            <div className="flex items-center">
+                <div className="min-w-0">
+                    <div className="font-mono text-2xl font-medium leading-none text-gray-900 dark:text-gray-100">{cityCode(shipment.origin, cityMap)}</div>
+                    <div className="mt-1.5 h-4 text-xs text-gray-500 dark:text-gray-400 truncate">{cityLabel(shipment.origin, cityMap)}</div>
                 </div>
-                <div className="flex-grow">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex flex-col items-center">
-                            <CityThumb name={shipment.origin} cityMap={cityMap} />
-                            <span className="font-semibold text-xs text-gray-600 dark:text-gray-400 text-center">{shipment.origin}</span>
-                        </div>
-                        <FlightPath className="flex-1 mx-2" />
-                        <div className="flex flex-col items-center">
-                            <CityThumb name={shipment.destination} cityMap={cityMap} />
-                            <span className="font-semibold text-xs text-gray-600 dark:text-gray-400 text-center">{shipment.destination}</span>
-                        </div>
-                    </div>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">
-                        {shipment.details}
-                    </p>
-                    {shipment.reach_latest_by && (
-                        <p className="text-red-500 text-sm mt-1 font-semibold">
-                            Reach Latest By: {formatDate(shipment.reach_latest_by)}
-                        </p>
-                    )}
+                <div className="flex-1 flex items-center gap-1.5 mx-3 mb-5 text-gray-300 dark:text-gray-600" aria-hidden="true">
+                    <span className="flex-1 border-t border-dashed border-current" />
+                    <Plane size={16} className="rotate-45 text-gray-400 dark:text-gray-500" />
+                    <span className="flex-1 border-t border-dashed border-current" />
+                </div>
+                <div className="min-w-0 text-right">
+                    <div className="font-mono text-2xl font-medium leading-none text-gray-900 dark:text-gray-100">{cityCode(shipment.destination, cityMap)}</div>
+                    <div className="mt-1.5 h-4 text-xs text-gray-500 dark:text-gray-400 truncate">{cityLabel(shipment.destination, cityMap)}</div>
                 </div>
             </div>
+        </div>
 
-            <div className="flex justify-between items-center border-t pt-4 dark:border-gray-700">
-                <span className={statusBadgeClasses(shipment.status)}>{shipment.status.toUpperCase()}</span>
-                <span className="text-blue-600 text-sm">View Details →</span>
+        <div className="border-t border-dashed border-gray-200 dark:border-gray-700 px-5 py-3.5 flex items-center gap-3">
+            <ItemImage shipment={shipment} compact className="w-14 h-14 rounded-lg flex-none" />
+            <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 dark:text-gray-100 truncate" title={shipment.item_description || undefined}>
+                    {shipment.item_description || 'No description'}
+                </p>
+                <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                    <Scale size={13} aria-hidden="true" />
+                    {shipment.weight ? `${shipment.weight} kg` : 'Weight not set'}
+                </p>
             </div>
-        </Link>
-    );
-};
+            <div className="text-right flex-none">
+                <div className="text-[11px] text-gray-400 dark:text-gray-500">Budget</div>
+                <div className="text-lg font-medium leading-tight text-gray-900 dark:text-gray-100 whitespace-nowrap">{formatBudget(shipment.max_budget)}</div>
+            </div>
+        </div>
+    </Link>
+);
 
 export default Dashboard;
