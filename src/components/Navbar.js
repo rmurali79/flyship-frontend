@@ -63,7 +63,9 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-800">
+        // Keep the bar free of backdrop-filter / transform / filter: any of them makes it the
+        // containing block for fixed children, which collapsed the notification panel to 0px.
+        <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
             <div className="container mx-auto px-4">
                 <div className="flex items-center h-16 gap-8">
                     <Link to="/" className="flex items-center text-gray-900 dark:text-white">
