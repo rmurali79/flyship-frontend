@@ -13,6 +13,7 @@ import ShipmentDrawer from '../components/ShipmentDrawer';
 import StatusPill from '../components/ui/StatusPill';
 import PageHeader from '../components/ui/PageHeader';
 import { formatMoney } from '../utils/money';
+import { contextLine, greeting, nextTrip, statTiles } from '../utils/dashboardSummary';
 
 // Looks up a city in the cities table by name (exact, else a known name it contains).
 const findCity = (name, cityMap) => {
@@ -38,6 +39,7 @@ const Dashboard = () => {
 
     const [acceptedDeliveries, setAcceptedDeliveries] = useState([]);
     const [myListings, setMyListings] = useState([]);
+    const [stats, setStats] = useState({});
 
     const [cityFilter, setCityFilter] = useState('');
     const [amountOp, setAmountOp] = useState('lt');
@@ -70,6 +72,10 @@ const Dashboard = () => {
     }, []);
 
     const loadData = useCallback(async () => {
+        // Stats load on their own so a failure there never blanks the listings.
+        axios.get(API_BASE + '/api/users/stats', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+            .then(res => setStats(res.data || {}))
+            .catch(err => console.error('Error fetching stats:', err));
         try {
             const token = localStorage.getItem('token');
             const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -210,6 +216,16 @@ const Dashboard = () => {
     const visibleShipments = applyListingSort(applyListingFilters(shipments
         .filter(s => user.role === 'shipper' ? s.status !== 'accepted' : true)));
 
+    const ownShipments = user.role === 'both' ? myListings : user.role === 'shipper' ? shipments : [];
+    const tiles = statTiles({ role: user.role, stats, deliveries: acceptedDeliveries, ownShipments, plans: travelPlans });
+    const context = contextLine({
+        role: user.role,
+        plans: travelPlans,
+        browseShipments: isTraveler ? shipments : [],
+        ownShipments,
+        route: (p) => `${cityCode(p.origin, cityMap)} → ${cityCode(p.destination, cityMap)}`,
+    });
+
     const seg = (active) => `seg-item ${active ? 'seg-item-active' : ''}`;
     const filterField = 'field py-1.5';
     const filterLabel = 'mb-1 text-xs font-semibold text-gray-500 dark:text-gray-400';
@@ -226,17 +242,27 @@ const Dashboard = () => {
                 onConfirm={confirmDialog.onConfirm}
                 onCancel={() => setConfirmDialog({ open: false })}
             />
-            <StatsWidget />
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between mb-6">
+                <div>
+                    <h1 className="page-title">{greeting(user.name)}</h1>
+                    <p className="mt-1.5 flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                        {isTraveler && nextTrip(travelPlans) && <Plane size={15} className="rotate-45 text-peerpost-gold" aria-hidden="true" />}
+                        {context}
+                    </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                    {isShipper && <Link to="/create-shipment" className={`btn ${isTraveler ? 'btn-secondary' : 'btn-primary'}`}>+ Create shipment</Link>}
+                    {isTraveler && <Link to="/create-travel-plan" className="btn btn-primary">+ Add trip</Link>}
+                </div>
+            </div>
+            <StatsWidget tiles={tiles} />
             {openShipmentId && (
                 <ShipmentDrawer shipmentId={openShipmentId} onClose={closeShipment} onChanged={loadData} />
             )}
 
             {isTraveler && (
                 <section className="mb-10">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="section-title">My travel plans</h2>
-                        <Link to="/create-travel-plan" className="btn btn-primary">+ Add travel plan</Link>
-                    </div>
+                    <h2 className="section-title mb-4">My travel plans</h2>
                     {travelPlans.length === 0 ? (
                         <p className="text-sm text-gray-500 dark:text-gray-400">No travel plans added yet.</p>
                     ) : (
@@ -273,10 +299,7 @@ const Dashboard = () => {
 
             {user.role === 'both' && (
                 <section className="mb-10">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="section-title">My listings</h2>
-                        <Link to="/create-shipment" className="btn btn-primary">+ Create shipment</Link>
-                    </div>
+                    <h2 className="section-title mb-4">My listings</h2>
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {myListings.length > 0 ? (
                             myListings.filter(s => s.status !== 'accepted').map(shipment => (
@@ -292,15 +315,13 @@ const Dashboard = () => {
             <PageHeader
                 className="border-t border-gray-200 dark:border-gray-700 pt-8"
                 title={user.role === 'shipper' ? 'My listings' : 'Available for pickup'}
+                titleAs="h2"
                 actions={<>
                     {user.role === 'traveler' && (
                         <div className="seg">
                             <button className={seg(viewMode === 'matched')} onClick={() => setViewMode('matched')}>Matched for Me</button>
                             <button className={seg(viewMode === 'all')} onClick={() => setViewMode('all')}>All Shipments</button>
                         </div>
-                    )}
-                    {user.role === 'shipper' && (
-                        <Link to="/create-shipment" className="btn btn-primary">+ Create shipment</Link>
                     )}
                 </>}
             />
