@@ -2,7 +2,7 @@ import React from 'react';
 
 // PeerPost wordmark. viewBox is 411.01 x 104.82 (~3.92:1); `size` sets the
 // rendered height and width is derived to preserve that aspect ratio.
-const FlyshipMark = ({ size = 33, className = '' }) => {
+const PeerPostMark = ({ size = 33, className = '' }) => {
     const height = size;
     const width = size * (411.01 / 104.82);
 
@@ -40,4 +40,4 @@ const FlyshipMark = ({ size = 33, className = '' }) => {
     );
 };
 
-export default FlyshipMark;
+export default PeerPostMark;

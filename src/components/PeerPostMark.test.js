@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import FlyshipMark from './FlyshipMark';
+import PeerPostMark from './PeerPostMark';
 
 test('brand mark uses the PeerPost label', () => {
-    render(<FlyshipMark />);
+    render(<PeerPostMark />);
     expect(screen.getByRole('img', { name: 'PeerPost' })).toBeInTheDocument();
 });
