@@ -5,7 +5,7 @@ import { LayoutDashboard, LogOut, UserRound, Wallet as WalletIcon } from 'lucide
 import API_BASE from '../config/api';
 import { formatMoney } from '../utils/money';
 import { useAuth } from '../context/AuthContext';
-import FlyshipMark from './FlyshipMark';
+import PeerPostMark from './PeerPostMark';
 import NotificationBell from './NotificationBell';
 import ThemeToggle from './ThemeToggle';
 
@@ -69,7 +69,7 @@ const Navbar = () => {
             <div className="container mx-auto px-4">
                 <div className="flex items-center h-16 gap-8">
                     <Link to="/" className="flex items-center text-gray-900 dark:text-white">
-                        <FlyshipMark size={40} className="h-10 w-auto" />
+                        <PeerPostMark size={40} className="h-10 w-auto" />
                     </Link>
 
                     {user && (
