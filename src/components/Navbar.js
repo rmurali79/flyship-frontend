@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { LayoutDashboard, LogOut, UserRound, Wallet as WalletIcon } from 'lucide-react';
+import { ChevronDown, CircleHelp, LayoutDashboard, LogOut, Sparkles, UserRound, Wallet as WalletIcon } from 'lucide-react';
 import API_BASE from '../config/api';
 import { formatMoney } from '../utils/money';
 import { useAuth } from '../context/AuthContext';
@@ -35,12 +35,15 @@ const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
+    const [helpOpen, setHelpOpen] = useState(false);
     const [wallet, setWallet] = useState(null);
     const menuRef = useRef(null);
+    const helpRef = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+            if (helpRef.current && !helpRef.current.contains(e.target)) setHelpOpen(false);
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -80,6 +83,25 @@ const Navbar = () => {
                     )}
 
                     <div className="ml-auto flex items-center gap-2 md:gap-3">
+                        <div className="relative" ref={helpRef}>
+                            <button
+                                onClick={() => setHelpOpen(!helpOpen)}
+                                aria-label="Help & Resources"
+                                aria-haspopup="menu"
+                                aria-expanded={helpOpen}
+                                className="flex items-center gap-1 rounded-full px-2 py-1.5 text-sm font-semibold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-peerpost-gold/60"
+                            >
+                                <CircleHelp size={18} aria-hidden="true" className="md:hidden" />
+                                <span className="hidden md:inline">Help &amp; Resources</span>
+                                <ChevronDown size={14} aria-hidden="true" className={`hidden md:inline transition ${helpOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {helpOpen && (
+                                <div role="menu" className="absolute right-0 mt-2 w-48 card shadow-lg py-1 z-50" onClick={() => setHelpOpen(false)}>
+                                    <Link to="/whats-new" role="menuitem" className={menuItemClass}><Sparkles size={16} aria-hidden="true" />What's New</Link>
+                                    <Link to="/faq" role="menuitem" className={menuItemClass}><CircleHelp size={16} aria-hidden="true" />FAQ</Link>
+                                </div>
+                            )}
+                        </div>
                         {user && wallet && (
                             <Link
                                 to="/wallet"

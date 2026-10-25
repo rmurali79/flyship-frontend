@@ -22,6 +22,8 @@ import CookiePolicy from './pages/CookiePolicy';
 import Wallet from './pages/Wallet';
 import Profile from './pages/Profile';
 import OTPVerification from './pages/OTPVerification';
+import WhatsNew from './pages/WhatsNew';
+import FAQ from './pages/FAQ';
 
 const PrivateRoute = ({ children }) => {
   const { user } = useAuth();
@@ -47,6 +49,8 @@ function App() {
               <Route path="/refund-policy" element={<RefundPolicy />} />
               <Route path="/payment-terms" element={<PaymentTerms />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
+              <Route path="/whats-new" element={<WhatsNew />} />
+              <Route path="/faq" element={<FAQ />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/verify-otp" element={<OTPVerification />} />
