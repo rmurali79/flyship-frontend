@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Navbar from './Navbar';
 
@@ -19,4 +19,19 @@ test('nav shows the PeerPost brand mark', () => {
         </MemoryRouter>
     );
     expect(screen.getByRole('img', { name: 'PeerPost' })).toBeInTheDocument();
+});
+
+test('Help & Resources menu links to What\'s New and FAQ', () => {
+    render(
+        <MemoryRouter>
+            <Navbar />
+        </MemoryRouter>
+    );
+    const trigger = screen.getByRole('button', { name: 'Help & Resources' });
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('menuitem', { name: "What's New" })).toHaveAttribute('href', '/whats-new');
+    expect(screen.getByRole('menuitem', { name: 'FAQ' })).toHaveAttribute('href', '/faq');
 });
